@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+<title>Search</title>
+<link rel="icon" href="./images/NASALogo.png">
+<link href="./font-awesome/css/font-awesome.css"
+	rel="stylesheet">
+<link rel="stylesheet"
+	href="./css/bootstrap-table/1.10.1/bootstrap-table.min.css">
+<link rel="stylesheet"
+	href="./css/bootstrap/3.3.6/bootstrap.min.css">
+<link href="./css/search.css" rel="stylesheet">
+</head>
+<body>
+	<div class="background"></div>
+							<div id="NotFound" style="display: none;position: fixed;top: 75px;left: 20px;z-index: 1;color:#FFF">
+								<p>Your search - <label id="searchKeyword"></label> did not match any dataset.</p>
+								<p>Suggestion:</p>
+								<ul>
+									<li>Make sure all words are spelled correctly.</li>
+									<li>Try different keywords.</li>
+									<li>Try different search operators.</li>
+								</ul>
+							</div>
+	<header id="main-toolbar" class="toolbar">
+		<div class="form">
+				<span class="twitter-typeahead"
+					style="position: relative; display: inline-block; direction: ltr;">
+					<input id="query" type="text" name="query"
+					class="autocomplete-placenames tt-input"
+					data-bind="valueUpdate: 'keyup'"
+					placeholder="Enter ocean concepts (e.g. ocean wind) to search"
+					autocomplete="off" spellcheck="false"
+					style="position: relative; vertical-align: top;">
+				</span>
+				<button id="searchButton" class="btn btn-search" type="button">
+					<i class="fa fa-search"></i>&nbsp;&nbsp;<span class="bold">Search</span>
+				</button>
+				<p style="font-size: 14px; margin-left: 20px;">
+					<span id="resultCount">Loading...</span>
+				</p>	
+				<div id="advSearch" style="position: absolute; right: 10px; top: 8px;">
+					<p style="font-size: 14px;padding-left: 20px;">
+						<span>Filter: 
+							<input id="filter" type="text"
+							class="autocomplete-placenames tt-input"
+							style="position: relative; vertical-align: top; width: 150px;"
+							onkeyup="applyFilter();return false;">
+						</span>
+					</p>
+					<p style="font-size: 14px; margin-left: 20px;">
+						<span id="filterResult"></span>
+					</p>
+				</div>
+		</div>
+	</header>
+	<section class="main-content">
+		<div
+			class="master-overlay homepage-search is-master-overlay-secondary-hidden is-master-overlay-maximized is-master-overlay-parent-hidden">
+			<div class="master-overlay-main">
+					<section id="collection-results" class="master-overlay-has-min">
+						<div id="collection-scroll-pane" class="master-overlay-content">
+							<div class="panel-list">
+								<table id="ResultsTable" class="table"></table>
+							</div>
+						</div>
+						<h2 id="loadingMore" style="display: none;">Loading more...</h2>
+					</section>
+			</div>
+		</div>
+	</section>
+	<footer>
+		<script src="./js/jquery-2.1.1.js"></script>
+		<script src="./js/jqueryui/1.11.2/jquery-ui.js"></script>
+	</footer>
+	<script src="./js/bootstrap/3.3.6/bootstrap.min.js"></script>
+	<script src="./js/bootstrap-table/1.10.1/bootstrap-table.min.js"></script>
+
+	<script src="./js/util.js"></script>
+
+	<script src="./js/search.js"></script>
+</body>
+</html>

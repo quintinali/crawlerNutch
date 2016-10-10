@@ -49,20 +49,25 @@ public class ESdriver {
   String crawlerType = "crawler4j";
   final Integer MAX_CHAR = 500;
 
-  Settings settings = System.getProperty("file.separator").equals("/") ? ImmutableSettings.settingsBuilder()
-      .put("http.enabled", "false")
-      .put("transport.tcp.port", "9300-9400")
-      .put("discovery.zen.ping.multicast.enabled", "false")
-      .put("discovery.zen.ping.unicast.hosts", "localhost")
-      .build() : ImmutableSettings.settingsBuilder().put("http.enabled", false).build();
+  
 
-      Node node = nodeBuilder().client(true).settings(settings).clusterName(cluster).node();
+      Node node;
 
-      public Client client = node.client();
+      public Client client;
 
       public BulkProcessor bulkProcessor = null;
 
       public ESdriver(){
+    	  Settings settings = System.getProperty("file.separator").equals("/") ? ImmutableSettings.settingsBuilder()
+    		      .put("http.enabled", "false")
+    		      .put("transport.tcp.port", "9300-9400")
+    		      .put("discovery.zen.ping.multicast.enabled", "false")
+    		      .put("discovery.zen.ping.unicast.hosts", "localhost")
+    		      .build() : ImmutableSettings.settingsBuilder().put("http.enabled", false).build();
+    	  
+    		      node = nodeBuilder().client(true).settings(settings).clusterName(cluster).node();
+    		      client = node.client();
+    		      
         putMapping(index);
       }
 
@@ -180,7 +185,7 @@ public class ESdriver {
         SearchResponse response = client.prepareSearch(index)
             .setTypes(crawlerType)           
             .setQuery(qb)
-            .setSize(500)
+            .setSize(20)
             .addAggregation(AggregationBuilders.terms("Types").field("fileType").size(0))
             .execute()
             .actionGet();
