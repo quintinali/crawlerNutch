@@ -2,15 +2,11 @@ var g_currentQuery, g_totalCount, g_bLoading = false, g_resultCount;
 
 $(document).ready(function() {
 	var query = getURLParameter('query');
-	if (query == null) {
-		$("#searchResults").hide();
-	} else {
-		g_currentQuery = encodeURI(query);
-		$("#searchResults").hide();
-		$("#NotFound").hide();
-		$("#query").val(query);
-		search(query);
-	}
+	g_currentQuery = encodeURI(query);
+	$("#searchResults").hide();
+	$("#NotFound").hide();
+	$("#query").val(query);
+	search(query);
 
 	$("#query").keyup(function(event) {
 		if (event.keyCode == 13) {
@@ -27,7 +23,7 @@ $(document).ready(function() {
 	// Each time the user scrolls
 	win.scroll(function() {
 		// End of the document reached?
-		if ($("#ResultsTable").height() - win.height() <= win.scrollTop() && !g_bLoading) {
+		if ($("#ResultsTable").height() - win.height() <= win.scrollTop() && !g_bLoading && !$("#filter").val()) {
 			g_bLoading = true;
 			$('#loadingMore').show();
 
@@ -63,7 +59,7 @@ $(document).ready(function() {
 });
 
 function search(query) {
-	if ($("#query").val() != "") {
+	//if ($("#query").val() != "") {
 		$("#searchBox").append($("#searchGroup"));
 		$("#searchjumbo").hide();
 		$("#note").hide();
@@ -102,7 +98,7 @@ function search(query) {
 				}
 			}
 		});
-	}
+	//}
 }
 
 function FileNameFormatter(value, row) {
