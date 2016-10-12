@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import pd.crawler4s.driver.ESdriver;
 
-
 /**
  * Servlet implementation class SearchByQuery
  */
@@ -28,26 +27,31 @@ public class SearchByQuery extends HttpServlet {
   }
 
   /**
-   * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+   * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+   *      response)
    */
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    response.setContentType("application/json");  
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+    response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
     String query = request.getParameter("query");
-    String filter = request.getParameter("filter");
-    String filter_field = request.getParameter("filter_field");
+    String scrollId = request.getParameter("result_from");
+    String limitStr = request.getParameter("result_limit");
+    Integer limit = Integer.parseInt(limitStr);
 
     ESdriver esd = (ESdriver) request.getServletContext().getAttribute("esd");
-    String fileList = esd.searchByQuery(query, filter, filter_field);
+    String fileList = esd.searchByQuery(query, scrollId, limit);
     PrintWriter out = response.getWriter();
-    out.print(fileList); 
+    out.print(fileList);
     out.flush();
   }
 
   /**
-   * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+   * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+   *      response)
    */
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest request,
+      HttpServletResponse response) throws ServletException, IOException {
     // TODO Auto-generated method stub
     doGet(request, response);
   }

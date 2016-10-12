@@ -1,4 +1,5 @@
-var g_currentQuery, g_totalCount, g_bLoading = false, g_resultCount;
+var g_currentQuery, g_totalCount, g_bLoading = false, g_scrollID, g_resultCount;
+var RESULT_LIMIT = 200;
 
 $(document).ready(function() {
 	var query = getURLParameter('query');
@@ -19,9 +20,23 @@ $(document).ready(function() {
 	});
 	
 	var win = $(".master-overlay-main");
+	// browser window scroll (in pixels) after which the "back to top" link is shown
+	var offset = 300,
+		//browser window scroll (in pixels) after which the "back to top" link opacity is reduced
+		offset_opacity = 1200,
+		//duration of the top scrolling animation (in ms)
+		scroll_top_duration = 700,
+		//grab the "back to top" link
+		$back_to_top = $('.cd-top');
 
 	// Each time the user scrolls
 	win.scroll(function() {
+		//hide or show the "back to top" link
+			( $(this).scrollTop() > offset ) ? $back_to_top.addClass('cd-is-visible') : $back_to_top.removeClass('cd-is-visible cd-fade-out');
+			if( $(this).scrollTop() > offset_opacity ) { 
+				$back_to_top.addClass('cd-fade-out');
+			}
+			
 		// End of the document reached?
 		if ($("#ResultsTable").height() - win.height() <= win.scrollTop() && !g_bLoading && !$("#filter").val()) {
 			g_bLoading = true;
@@ -31,16 +46,15 @@ $(document).ready(function() {
 				url : "SearchByQuery",
 				data : {
 					"query" : $("#query").val(),
-					"filter": null,
-					"filter_field": "fileType",
-					"result_from": 0,
-					"result_limit": 20
+					"result_from": g_scrollID,
+					"result_limit": RESULT_LIMIT
 				},
 				success : function completeHandler(response) {
 					g_bLoading = false;
 					$('#loadingMore').hide();
 					if (response != null) {
 						var searchResults = response.SearchResults;
+						g_scrollID = response.ScrollID;
 						
 						if (searchResults.length == 0) {
 //							$("#NotFound").show();
@@ -55,6 +69,15 @@ $(document).ready(function() {
 				}
 			});
 		}
+	});
+	
+	//smooth scroll to top
+	$back_to_top.on('click', function(event){
+		event.preventDefault();
+		$('.master-overlay-main').animate({
+			scrollTop: 0 ,
+		 	}, scroll_top_duration
+		);
 	});
 });
 
@@ -73,15 +96,14 @@ function search(query) {
 			url : "SearchByQuery",
 			data : {
 				"query" : $("#query").val(),
-				"filter": null,
-				"filter_field": "fileType",
-				"result_from": 0,
-				"result_limit": 20
+				"result_from": "",
+				"result_limit": RESULT_LIMIT
 			},
 			success : function completeHandler(response) {
 				if (response != null) {
 					$("#searchLoading").hide();
-					g_totalCount = response.ResultCount = 999;
+					g_totalCount = response.ResultCount /*= 999*/;
+					g_scrollID = response.ScrollID;
 					var searchResults = response.SearchResults;
 					if (searchResults.length == 0 || response.ResultCount <= 0) {
 						$("#NotFound").show();
