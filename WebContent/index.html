@@ -36,27 +36,15 @@
 					data-bind="valueUpdate: 'keyup'"
 					placeholder="Enter planet concepts (e.g. Mars) to search"
 					autocomplete="off" spellcheck="false"
+					onkeyup="typewatch(function(){applyFilter();}, 1000 );"
 					style="position: relative; vertical-align: top;">
 				</span>
 				<button id="searchButton" class="btn btn-search" type="button">
-					<i class="fa fa-search"></i>&nbsp;&nbsp;<span class="bold">Search</span>
+					<i class="fa fa-search"></i>&nbsp;&nbsp;<span class="bold">Search from server</span>
 				</button>
 				<p style="font-size: 14px; margin-left: 20px;">
 					<span id="resultCount">Loading...</span>
-				</p>	
-				<div id="advSearch" style="position: absolute; right: 10px; top: 8px;">
-					<p style="font-size: 14px;padding-left: 20px;">
-						<span>Filter: 
-							<input id="filter" type="text"
-							class="autocomplete-placenames tt-input"
-							style="position: relative; vertical-align: top; width: 150px;"
-							onkeyup="applyFilter();return false;">
-						</span>
-					</p>
-					<p style="font-size: 14px; margin-left: 20px;">
-						<span id="filterResult"></span>
-					</p>
-				</div>
+				</p>
 		</div>
 	</header>
 	<section class="main-content">

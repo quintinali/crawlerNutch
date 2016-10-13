@@ -1,4 +1,4 @@
-var g_currentQuery, g_totalCount, g_bLoading = false, g_scrollID, g_resultCount;
+var g_currentQuery, g_totalCount, g_searchResult = [], g_bLoading = false, g_scrollID, g_resultCount;
 var RESULT_LIMIT = 200;
 
 $(document).ready(function() {
@@ -38,7 +38,7 @@ $(document).ready(function() {
 			}
 			
 		// End of the document reached?
-		if ($("#ResultsTable").height() - win.height() <= win.scrollTop() && !g_bLoading && !$("#filter").val()) {
+		if ($("#ResultsTable").height() - win.height() <= win.scrollTop() + 100 && !g_bLoading && !$("#filter").val()) {
 			g_bLoading = true;
 			$('#loadingMore').show();
 
@@ -61,9 +61,11 @@ $(document).ready(function() {
 //							$("#searchKeyword").html($("#query").val());
 //							$("#resultCount, #ontology-results").hide();
 						} else {
+							g_searchResult = g_searchResult.concat(searchResults);
 							g_resultCount += searchResults.length;
-							$("#resultCount").html('Showing ' + g_resultCount + ' results of ' + g_totalCount + ' matches');
-							$('#ResultsTable').bootstrapTable('append', searchResults);
+							updateResultCountLabel();
+							//$("#resultCount").html('Showing ' + g_resultCount + ' results of ' + g_totalCount + ' matches');
+							$('#ResultsTable').bootstrapTable('append', processTableDataSource(searchResults));
 						}
 					}
 				}
@@ -102,25 +104,45 @@ function search(query) {
 			success : function completeHandler(response) {
 				if (response != null) {
 					$("#searchLoading").hide();
-					g_totalCount = response.ResultCount /*= 999*/;
+					g_totalCount = response.ResultCount;
 					g_scrollID = response.ScrollID;
-					var searchResults = response.SearchResults;
-					if (searchResults.length == 0 || response.ResultCount <= 0) {
+					g_searchResult = response.SearchResults;
+					if (g_searchResult.length == 0 || response.ResultCount <= 0) {
 						$("#NotFound").show();
 						$("#searchKeyword").html($("#query").val());
-						$("#resultCount, #ontology-results").hide();
+						updateResultCountLabel();
 					} else {
-						g_resultCount = searchResults.length;
+						g_resultCount = g_searchResult.length;
 						$("#NotFound").hide();
-						$("#resultCount, #ontology-results").show();
-						$("#resultCount").html('Showing ' + g_resultCount + ' results of ' + g_totalCount + ' matches');
+						updateResultCountLabel();
 						createResultTable();
-						$('#ResultsTable').bootstrapTable('load', searchResults);
+						$('#ResultsTable').bootstrapTable('load', processTableDataSource(g_searchResult));
 					}
 				}
 			}
 		});
 	//}
+}
+
+function processTableDataSource(dataSource) {
+	var tableDataSource = [];
+	for(var i = 0; i < dataSource.length; i++) {
+		var searchResult = jQuery.extend({}, dataSource[i]);
+		if(searchResult.Content.length > 500) {
+			searchResult.Content = searchResult.Content.substring(0, 500) + '...';
+		}
+		
+		tableDataSource.push(searchResult);
+	}
+	return tableDataSource;
+}
+
+function updateResultCountLabel(filterCount) {
+	if(null == filterCount) {
+		$("#resultCount").html('Showing ' + g_resultCount + ' entries (filtered from  ' + g_totalCount + ' total entries)');
+	} else {
+		$("#resultCount").html('Showing ' + filterCount + ' of ' + g_resultCount + ' entries (filtered from  ' + g_totalCount + ' total entries)');
+	}
 }
 
 function FileNameFormatter(value, row) {
@@ -136,7 +158,7 @@ function FileNameFormatter(value, row) {
 }
 
 function URLFormatter(value, row) {
-	return '<h5 class="text-success resultContent">' + value + '</h5>'; 
+	return '<h5 class="text-success resultContent">' + extractDomain(value) + '</h5>'; 
 }
 
 function TimeFormatter(value, row) {
@@ -167,15 +189,6 @@ function createResultTable() {
 			'formatter' : URLFormatter,
 		},
 		{
-			'title' : 'Time',
-			'field' : 'Time',
-			'formatter' : TimeFormatter,
-		}, 
-		/*{			
-			'title' : 'Type',
-			'field' : 'Type',
-		},*/
-		{
 			'title' : 'Content',
 			'field' : 'Content',
 			'formatter' : DefaultFormatter,
@@ -187,23 +200,19 @@ function createResultTable() {
 }
 
 function applyFilter() {
-	var filter = $("#filter").val();
+	var filter = $("#query").val();
+	$("#ResultsTable tbody tr").show();
+	updateResultCountLabel();
 	if(filter) {
-		$("#filterResult").show();
-		$("#ResultsTable tbody tr").each(function() {
-			var trDOM = $(this);
-			trDOM.hide();
-			$(this).find(".resultContent").each(function() {
-				if(contains($(this).html(), filter)) {
-					trDOM.show();
-				}
-			});
-		});
+		var count = g_searchResult.length;
+		for(var i = 0; i < g_searchResult.length; i++) {
+			if(!contains(g_searchResult[i].Content, filter)){
+				$("#ResultsTable tbody tr:nth-child(" + (i + 1) + ")").hide();
+				count--;
+			}
+		}
 
-		$("#filterResult").html($("#ResultsTable tbody tr:visible").length + " results found!")
-	} else {
-		$("#ResultsTable tbody tr").show();
-		$("#filterResult").hide();
+		updateResultCountLabel(count);
 	}
 }
 
@@ -212,3 +221,27 @@ function contains(str, searchStr) {
 	if(!searchStr) return true;
 	return str.toLowerCase().indexOf(searchStr.toLowerCase()) >= 0;
 }
+
+function extractDomain(url) {
+    var domain;
+    //find & remove protocol (http, ftp, etc.) and get domain
+    if (url.indexOf("://") > -1) {
+        domain = url.split('/')[2];
+    }
+    else {
+        domain = url.split('/')[0];
+    }
+
+    //find & remove port number
+    domain = domain.split(':')[0];
+
+    return domain.replace('www.', '');
+}
+
+var typewatch = function(){
+    var timer = 0;
+    return function(callback, ms){
+        clearTimeout (timer);
+        timer = setTimeout(callback, ms);
+    }  
+}();

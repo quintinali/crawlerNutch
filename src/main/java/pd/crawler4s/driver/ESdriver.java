@@ -283,16 +283,16 @@ public class ESdriver {
         URL = "";
       }
 
-      if (!Content.equals("")) {
+      /*if (!Content.equals("")) {
         int maxLength = (Content.length() < MAX_CHAR) ? Content.length()
             : MAX_CHAR;
         Content = Content.trim().substring(0, maxLength - 1) + "...";
-      }
+      }*/
 
       JsonObject file = new JsonObject();
       file.addProperty("Title", Title);
-      file.addProperty("Time", Time);
-      file.addProperty("Type", fileType);
+      // file.addProperty("Time", Time);
+      // file.addProperty("Type", fileType);
       file.addProperty("URL", URL);
       file.addProperty("Content", Content);
       fileList.add(file);
