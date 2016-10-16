@@ -8,25 +8,13 @@
 <meta name="author" content="">
 <title>Search</title>
 <link rel="icon" href="./images/NASALogo.png">
-<link href="./font-awesome/css/font-awesome.css"
-	rel="stylesheet">
-<link rel="stylesheet"
-	href="./css/bootstrap-table/1.10.1/bootstrap-table.min.css">
-<link rel="stylesheet"
-	href="./css/bootstrap/3.3.6/bootstrap.min.css">
+<link href="./font-awesome/css/font-awesome.css" rel="stylesheet">
+<link rel="stylesheet" href="./css/bootstrap-table/1.10.1/bootstrap-table.min.css">
+<link rel="stylesheet" href="./css/bootstrap/3.3.6/bootstrap.min.css">
+<link rel="stylesheet" href="./css/jquery.dataTables.min.css">
 <link href="./css/search.css" rel="stylesheet">
 </head>
 <body>
-	<div class="background"></div>
-							<div id="NotFound" style="display: none;position: fixed;top: 75px;left: 20px;z-index: 1;color:#FFF">
-								<p>Your search - <label id="searchKeyword"></label> did not match any dataset.</p>
-								<p>Suggestion:</p>
-								<ul>
-									<li>Make sure all words are spelled correctly.</li>
-									<li>Try different keywords.</li>
-									<li>Try different search operators.</li>
-								</ul>
-							</div>
 	<header id="main-toolbar" class="toolbar">
 		<div class="form">
 				<span class="twitter-typeahead"
@@ -36,7 +24,7 @@
 					data-bind="valueUpdate: 'keyup'"
 					placeholder="Enter planet concepts (e.g. Mars) to search"
 					autocomplete="off" spellcheck="false"
-					onkeyup="typewatch(function(){applyFilter();}, 1000 );"
+					onkeyup="applyFilter();"
 					style="position: relative; vertical-align: top;">
 				</span>
 				<button id="searchButton" class="btn btn-search" type="button">
@@ -54,11 +42,23 @@
 					<section id="collection-results" class="master-overlay-has-min">
 						<div id="collection-scroll-pane" class="master-overlay-content">
 							<div class="panel-list">
-								<table id="ResultsTable" class="table"></table>
+								<table id="ResultsTable" cellpadding="0" cellspacing="0" border="0" class="datatable table table-striped table-bordered" style="border: none;">
+									<thead>
+										<tr>
+											<th>Search Result</th>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+									<tfoot>
+										<tr>
+											<th>Search Result</th>
+										</tr>
+									</tfoot>
+								</table>
 							</div>
 						</div>
-						<a href="#0" class="cd-top">Top</a>
-						<h2 id="loadingMore" style="display: none;font-size: 20px;padding: 6px 0px 20px 20px;">Loading more...</h2>
+						<!-- <h2 id="loadingMore" style="display: none;font-size: 20px;padding: 6px 0px 20px 20px;">Loading more...</h2> -->
 					</section>
 			</div>
 		</div>
@@ -69,6 +69,7 @@
 	</footer>
 	<script src="./js/bootstrap/3.3.6/bootstrap.min.js"></script>
 	<script src="./js/bootstrap-table/1.10.1/bootstrap-table.min.js"></script>
+	<script src="./js/jquery.dataTables.min.js"></script>
 
 	<script src="./js/util.js"></script>
 

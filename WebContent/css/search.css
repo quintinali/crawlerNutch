@@ -241,7 +241,7 @@ input[type="text"], input[type="search"], input[type="password"],
 .master-overlay-main {
 	background-color: rgba(256, 256, 256, 0.9);
 	width: 100%;
-	height: calc(100% - 60px);
+	height: calc(100% - 79px);
 	padding-bottom: 10px;
 	overflow: auto;
 	z-index: 60;
@@ -539,6 +539,24 @@ a.fileShortName {
     font-size: 12px;
 }
 
+.resultContent label{
+	display: inline;
+	font-weight: normal;
+	margin-bottom: 0px;
+}
+
+.resultContent .fullContent {
+	display: none;
+}
+
+.resultContent .more {
+	cursor: pointer;
+	color: rgb(0, 129, 153);
+	margin-left: 6px;
+}
+
 #ResultsTable td {
     padding: 5px 8px;
+    border: none;
+    border-bottom: 1px dashed #ddd;
 }

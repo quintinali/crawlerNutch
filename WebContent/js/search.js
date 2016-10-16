@@ -1,11 +1,9 @@
-var g_currentQuery, g_totalCount, g_searchResult = [], g_bLoading = false, g_scrollID, g_resultCount;
+var g_currentQuery, g_totalCount, g_bLoading = false, g_hasMore = true, g_scrollID, g_resultCount, g_tableObj;
 var RESULT_LIMIT = 200;
 
 $(document).ready(function() {
 	var query = getURLParameter('query');
 	g_currentQuery = encodeURI(query);
-	$("#searchResults").hide();
-	$("#NotFound").hide();
 	$("#query").val(query);
 	search(query);
 
@@ -19,207 +17,148 @@ $(document).ready(function() {
 		redirect("index", "query", $("#query").val());
 	});
 	
-	var win = $(".master-overlay-main");
-	// browser window scroll (in pixels) after which the "back to top" link is shown
-	var offset = 300,
-		//browser window scroll (in pixels) after which the "back to top" link opacity is reduced
-		offset_opacity = 1200,
-		//duration of the top scrolling animation (in ms)
-		scroll_top_duration = 700,
-		//grab the "back to top" link
-		$back_to_top = $('.cd-top');
-
-	// Each time the user scrolls
-	win.scroll(function() {
-		//hide or show the "back to top" link
-			( $(this).scrollTop() > offset ) ? $back_to_top.addClass('cd-is-visible') : $back_to_top.removeClass('cd-is-visible cd-fade-out');
-			if( $(this).scrollTop() > offset_opacity ) { 
-				$back_to_top.addClass('cd-fade-out');
-			}
-			
-		// End of the document reached?
-		if ($("#ResultsTable").height() - win.height() <= win.scrollTop() + 100 && !g_bLoading && !$("#filter").val()) {
-			g_bLoading = true;
-			$('#loadingMore').show();
-
-			$.ajax({
-				url : "SearchByQuery",
-				data : {
-					"query" : $("#query").val(),
-					"result_from": g_scrollID,
-					"result_limit": RESULT_LIMIT
-				},
-				success : function completeHandler(response) {
-					g_bLoading = false;
-					$('#loadingMore').hide();
-					if (response != null) {
-						var searchResults = response.SearchResults;
-						g_scrollID = response.ScrollID;
-						
-						if (searchResults.length == 0) {
-//							$("#NotFound").show();
-//							$("#searchKeyword").html($("#query").val());
-//							$("#resultCount, #ontology-results").hide();
-						} else {
-							g_searchResult = g_searchResult.concat(searchResults);
-							g_resultCount += searchResults.length;
-							updateResultCountLabel();
-							//$("#resultCount").html('Showing ' + g_resultCount + ' results of ' + g_totalCount + ' matches');
-							$('#ResultsTable').bootstrapTable('append', processTableDataSource(searchResults));
-						}
-					}
-				}
-			});
+	g_tableObj = $('#ResultsTable').DataTable({
+		"sPaginationType": "full_numbers",
+		"bSort": false,
+		"pageLength": 20,
+		"dom": 'tp',
+		"fnDrawCallback": function ( oSettings ) {
+		    $(oSettings.nTHead).hide();
+		    $(oSettings.nTFoot).hide();
 		}
+	}).on('page.dt', function () {
+	    var info = g_tableObj.page.info();
+	    if(info.end == info.recordsTotal && g_hasMore && !g_bLoading) {
+	    	//load more
+	    	g_bLoading = true;
+	    	$.when(req_search(g_currentQuery)).done(function (searchResult) {
+	    		if (searchResult != null) {
+	    			g_scrollID = searchResult.ScrollID;
+	    			var searchResults = searchResult.SearchResults;
+	    			if(searchResult.ResultCount < RESULT_LIMIT) {
+	    				g_hasMore = false;
+	    			}
+	    			if (searchResults.length > 0) {
+	    				g_resultCount += searchResults.length;
+	    				searchResults = processTableDataSource(searchResults);
+	    				for(var i = 0; i < searchResults.length; i++) {
+	    					g_tableObj.row.add([tableRowFormatter(searchResults[i])]);
+	    				}
+	    				g_tableObj.draw(false);
+	    			}
+    				updateResultCountLabel();
+	    		}
+	    		g_bLoading = false;
+	        }).fail(function (jqXHR, textStatus) {
+	            alert("Error: " + jqXHR.statusText, 'error');
+	    		g_bLoading = false;
+	        });
+	    }
 	});
 	
-	//smooth scroll to top
-	$back_to_top.on('click', function(event){
-		event.preventDefault();
-		$('.master-overlay-main').animate({
-			scrollTop: 0 ,
-		 	}, scroll_top_duration
-		);
+	$('#ResultsTable').on("click", ".more", function(){
+		if($(this).siblings(".shortenContent").is(":visible")) {
+			$(this).text("[Less]");
+			$(this).siblings(".shortenContent").css("display", "none");
+			$(this).siblings(".fullContent").css("display", "inline");
+		} else {
+			$(this).text("[More]");
+			$(this).siblings(".shortenContent").css("display", "inline");
+			$(this).siblings(".fullContent").css("display", "none");
+		}
 	});
 });
 
 function search(query) {
-	//if ($("#query").val() != "") {
-		$("#searchBox").append($("#searchGroup"));
-		$("#searchjumbo").hide();
-		$("#note").hide();
-		$("#searchResults").show();
-		$("#searchLoading").show();
-
-		$("#searchContainer").css("margin-top", "30px");
-		$("#searchResultContainer").show();
-		$("#searchContainer h2.title").css("font-size", "24px");
-		$.ajax({
-			url : "SearchByQuery",
-			data : {
-				"query" : $("#query").val(),
-				"result_from": "",
-				"result_limit": RESULT_LIMIT
-			},
-			success : function completeHandler(response) {
-				if (response != null) {
-					$("#searchLoading").hide();
-					g_totalCount = response.ResultCount;
-					g_scrollID = response.ScrollID;
-					g_searchResult = response.SearchResults;
-					if (g_searchResult.length == 0 || response.ResultCount <= 0) {
-						$("#NotFound").show();
-						$("#searchKeyword").html($("#query").val());
-						updateResultCountLabel();
-					} else {
-						g_resultCount = g_searchResult.length;
-						$("#NotFound").hide();
-						updateResultCountLabel();
-						createResultTable();
-						$('#ResultsTable').bootstrapTable('load', processTableDataSource(g_searchResult));
-					}
+	//reset counters
+	g_totalCount = g_resultCount = 0;
+	g_searchResult = [];
+	g_hasMore = true;
+	g_scrollID = null;
+	g_currentQuery = $("#query").val();
+	
+	$.when(req_search(g_currentQuery)).done(function (searchResult) {
+		if (searchResult != null) {
+			g_totalCount = searchResult.ResultCount;
+			g_scrollID = searchResult.ScrollID;
+			var searchResults = searchResult.SearchResults;
+			g_resultCount = searchResults.length;
+			if(g_resultCount < RESULT_LIMIT) {
+				g_hasMore = false;
+			} 
+			if (g_resultCount > 0) {
+				searchResults = processTableDataSource(searchResults);
+				for(var i = 0; i < g_resultCount; i++) {
+					g_tableObj.row.add([tableRowFormatter(searchResults[i])]);
 				}
+				g_tableObj.draw(false);
 			}
-		});
-	//}
+			updateResultCountLabel();
+		}
+    }).fail(function (jqXHR, textStatus) {
+        alert("Error: " + jqXHR.statusText, 'error');
+    });
+}
+
+function req_search(search) {
+	return $.ajax({
+		url : "SearchByQuery",
+		data : {
+			"query" : search,
+			"result_from": g_scrollID,
+			"result_limit": RESULT_LIMIT
+		}
+	});
 }
 
 function processTableDataSource(dataSource) {
-	var tableDataSource = [];
+	if(null == dataSource || 0 == dataSource.length) return dataSource;
 	for(var i = 0; i < dataSource.length; i++) {
-		var searchResult = jQuery.extend({}, dataSource[i]);
-		if(searchResult.Content.length > 500) {
-			searchResult.Content = searchResult.Content.substring(0, 500) + '...';
+		if(dataSource[i].Content.length > 500) {
+			dataSource[i].Content = '<label class="shortenContent">' + dataSource[i].Content.substring(0, 500) + '...' + '</label><label class="fullContent">' + dataSource[i].Content + '</label><span class="more">[More]</span>';
 		}
-		
-		tableDataSource.push(searchResult);
 	}
-	return tableDataSource;
+	return dataSource;
 }
 
-function updateResultCountLabel(filterCount) {
-	if(null == filterCount) {
-		$("#resultCount").html('Showing ' + g_resultCount + ' entries (filtered from  ' + g_totalCount + ' total entries)');
+function updateResultCountLabel() {
+	if(0 == g_resultCount) {
+		$("#resultCount").html('No entry matches!');
+	} else if(g_tableObj.page.info().recordsTotal == g_tableObj.page.info().recordsDisplay) {
+		$("#resultCount").html('Showing first ' + g_resultCount + ' entries (from  ' + g_totalCount + ' matched entries)');
 	} else {
-		$("#resultCount").html('Showing ' + filterCount + ' of ' + g_resultCount + ' entries (filtered from  ' + g_totalCount + ' total entries)');
+		$("#resultCount").html('Showing first ' + g_tableObj.page.info().recordsDisplay + ' of ' + g_resultCount + ' entries (from  ' + g_totalCount + ' matched entries)');
 	}
 }
 
-function FileNameFormatter(value, row) {
-	if(row.Type == "webpage")
+function FileNameFormatter(value, url) {
+	if(url)
 	{
-	   var weburl = row.URL;
-	   return '<h4><a href=' + weburl + ' target="_blank" class="resultContent">' + value + '</a></h4>'; 
+	   return '<h4><a href=' + url + ' target="_blank" class="resultContent">' + value + '</a></h4>'; 
 	}
 	else{
-		var url = "FileUpload?fileName="+encodeURIComponent(value);	
+		url = "FileUpload?fileName="+encodeURIComponent(value);	
 		return '<h4><a href=' + url + ' target="_blank" class="resultContent">' + value + '</a></h4>'; 
 	}
 }
 
-function URLFormatter(value, row) {
+function URLFormatter(value) {
 	return '<h5 class="text-success resultContent">' + extractDomain(value) + '</h5>'; 
 }
 
-function TimeFormatter(value, row) {
-	return '<h5 style="font-style: italic" class="resultContent">' + value + '</h5>'; 
-}
-
-function DefaultFormatter(value, row) {
+function DefaultFormatter(value) {
 	return '<h5 class="resultContent">' + value + '</h5>'; 
 }
 
-function createResultTable() {
-	var layout = {
-		cache : false,
-		pagination : false,
-		striped : true,
-		cardView : true,
-		showHeader : false,
-
-		columns : [ {
-			'title' : 'Title',
-			'field' : 'Title',
-			'formatter' : FileNameFormatter,
-			sortable : true
-		}, 
-		{
-			'title' : 'URL',
-			'field' : 'URL',
-			'formatter' : URLFormatter,
-		},
-		{
-			'title' : 'Content',
-			'field' : 'Content',
-			'formatter' : DefaultFormatter,
-		}
-		]
-	};
-
-	$('#ResultsTable').bootstrapTable(layout);
+function tableRowFormatter(searchResult) {
+	if(!searchResult) return '';
+	return '<div class="card-view"><span class="value">' + FileNameFormatter(searchResult.Title, searchResult.URL) + '</span></div><div class="card-view"><span class="value">' + URLFormatter(searchResult.URL) + '</span></div><div class="card-view"><span class="value">' + DefaultFormatter(searchResult.Content) + '</span></div>';
 }
 
 function applyFilter() {
 	var filter = $("#query").val();
-	$("#ResultsTable tbody tr").show();
+	g_tableObj.search(filter).draw();
 	updateResultCountLabel();
-	if(filter) {
-		var count = g_searchResult.length;
-		for(var i = 0; i < g_searchResult.length; i++) {
-			if(!contains(g_searchResult[i].Content, filter)){
-				$("#ResultsTable tbody tr:nth-child(" + (i + 1) + ")").hide();
-				count--;
-			}
-		}
-
-		updateResultCountLabel(count);
-	}
-}
-
-function contains(str, searchStr) {
-	if(!str) return false;
-	if(!searchStr) return true;
-	return str.toLowerCase().indexOf(searchStr.toLowerCase()) >= 0;
 }
 
 function extractDomain(url) {
@@ -237,11 +176,3 @@ function extractDomain(url) {
 
     return domain.replace('www.', '');
 }
-
-var typewatch = function(){
-    var timer = 0;
-    return function(callback, ms){
-        clearTimeout (timer);
-        timer = setTimeout(callback, ms);
-    }  
-}();
