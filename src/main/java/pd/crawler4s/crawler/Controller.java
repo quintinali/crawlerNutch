@@ -25,9 +25,12 @@ public class Controller {
 
     CrawlConfig config = new CrawlConfig();
     config.setCrawlStorageFolder(crawlStorageFolder);
-    config.setMaxDepthOfCrawling(100);
-    config.setMaxPagesToFetch(100000);
+    config.setMaxDepthOfCrawling(5000);
+    config.setMaxPagesToFetch(1000000);
     config.setResumableCrawling(false);
+    
+    config.setSocketTimeout(10000); 
+    config.setConnectionTimeout(10000);
 
     /*
      * IMPORTANT CONFIG OPTIONS
@@ -64,6 +67,8 @@ public class Controller {
     controller.addSeed("http://neo.ssa.esa.int/");
     controller.addSeed("http://neocam.ipac.caltech.edu/");
     controller.addSeed("http://www.minorplanetcenter.net/iau/mpc.html");
+    controller.addSeed("https://en.wikipedia.org/wiki/Near-Earth_object");
+    controller.addSeed("http://neo.sci.gsfc.nasa.gov/");
 
     /*
      * Start the crawl. This is a blocking operation, meaning that your code
