@@ -156,84 +156,7 @@ public class ESdriver {
     return false;
   }
 
-  /*public String searchByQuery(String query, String filter,
-      String filter_field) {
-    boolean exists = node.client().admin().indices().prepareExists(index)
-        .execute().actionGet().isExists();
-    if (!exists) {
-      return null;
-    }
-  
-    QueryBuilder qb = null;
-    if (filter.equals("")) {
-      qb = QueryBuilders.queryStringQuery(query);
-    } else {
-      FilterBuilder filter_search = FilterBuilders.boolFilter()
-          .must(FilterBuilders.termFilter(filter_field, filter));
-      qb = QueryBuilders.filteredQuery(QueryBuilders.queryStringQuery(query),
-          filter_search);
-    }
-    SearchResponse response = client.prepareSearch(index).setTypes(crawlerType)
-        .setQuery(qb).setSize(20)
-        .addAggregation(
-            AggregationBuilders.terms("Types").field("fileType").size(0))
-        .execute().actionGet();
-  
-    Terms Types = response.getAggregations().get("Types");
-    List<JsonObject> TypeList = new ArrayList<JsonObject>();
-    for (Terms.Bucket entry : Types.getBuckets()) {
-      JsonObject Type = new JsonObject();
-      Type.addProperty("Key", entry.getKey());
-      Type.addProperty("Value", entry.getDocCount());
-      TypeList.add(Type);
-    }
-  
-    Gson gson = new Gson();
-    List<JsonObject> fileList = new ArrayList<JsonObject>();
-  
-    for (SearchHit hit : response.getHits().getHits()) {
-      Map<String, Object> result = hit.getSource();
-      String fileType = (String) result.get("fileType");
-      String Time = (String) result.get("Time");
-      String Content = (String) result.get("content");
-      String Title, URL = null;
-      if (fileType.equals("webpage")) {
-        Title = (String) result.get("Title");
-        URL = (String) result.get("URL");
-      } else {
-        Title = (String) result.get("fullName");
-        URL = "";
-      }
-  
-      if (!Content.equals("")) {
-        int maxLength = (Content.length() < MAX_CHAR) ? Content.length()
-            : MAX_CHAR;
-        Content = Content.trim().substring(0, maxLength - 1) + "...";
-      }
-  
-      JsonObject file = new JsonObject();
-      file.addProperty("Title", Title);
-      file.addProperty("Time", Time);
-      file.addProperty("Type", fileType);
-      file.addProperty("URL", URL);
-      file.addProperty("Content", Content);
-      fileList.add(file);
-  
-    }
-    JsonElement fileList_Element = gson.toJsonTree(fileList);
-    JsonElement TypeList_Element = gson.toJsonTree(TypeList);
-  
-    JsonObject PDResults = new JsonObject();
-    JsonObject FacetResults = new JsonObject();
-    PDResults.add("SearchResults", fileList_Element);
-  
-    FacetResults.add("fileType", TypeList_Element);
-  
-    PDResults.add("FacetResults", FacetResults);
-    return PDResults.toString();
-  }*/
-
-  public String searchByQuery(String query, String scrollId, int limit) {
+  public String searchByQuery(String query, int from, int limit) {
     boolean exists = node.client().admin().indices().prepareExists(index)
         .execute().actionGet().isExists();
     if (!exists) {
@@ -251,20 +174,17 @@ public class ESdriver {
       limit = 200;
     }
 
+    if (from <= 0) {
+      from = 0;
+    }
+
     int docCount = getDocCount(index, qb, crawlerType);
 
     SearchResponse scrollResp = null;
-    if (scrollId.equals("")) {
-      scrollResp = client.prepareSearch(index).setTypes(crawlerType)
-          .setScroll(new TimeValue(60000)).addSort("Time", SortOrder.ASC)
-          .setQuery(qb).setSize(limit).execute().actionGet();
-    } else {
 
-      scrollResp = client.prepareSearchScroll(scrollId)
-          .setScroll(new TimeValue(60000)).execute().actionGet();
-    }
-
-    String newScrollId = scrollResp.getScrollId();
+    scrollResp = client.prepareSearch(index).setTypes(crawlerType)
+        .setScroll(new TimeValue(60000)).addSort("Time", SortOrder.ASC)
+        .setQuery(qb).setFrom(from).setSize(limit).execute().actionGet();
 
     Gson gson = new Gson();
     List<JsonObject> fileList = new ArrayList<JsonObject>();
@@ -283,16 +203,11 @@ public class ESdriver {
         URL = "";
       }
 
-      /*if (!Content.equals("")) {
-        int maxLength = (Content.length() < MAX_CHAR) ? Content.length()
-            : MAX_CHAR;
-        Content = Content.trim().substring(0, maxLength - 1) + "...";
-      }*/
+      String orgnization = (String) result.get("organization");
 
       JsonObject file = new JsonObject();
       file.addProperty("Title", Title);
-      // file.addProperty("Time", Time);
-      // file.addProperty("Type", fileType);
+      file.addProperty("Organization", orgnization);
       file.addProperty("URL", URL);
       file.addProperty("Content", Content);
       fileList.add(file);
@@ -303,7 +218,6 @@ public class ESdriver {
 
     PDResults.add("SearchResults", fileList_Element);
     PDResults.addProperty("ResultCount", docCount);
-    PDResults.addProperty("ScrollID", newScrollId);
 
     return PDResults.toString();
   }

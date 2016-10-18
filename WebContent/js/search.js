@@ -157,7 +157,7 @@ function DefaultFormatter(value) {
 
 function tableRowFormatter(searchResult) {
 	if(!searchResult) return '';
-	return '<div class="card-view"><span class="value">' + FileNameFormatter(searchResult.Title, searchResult.URL) + '</span></div><div class="card-view"><span class="value">' + URLFormatter(searchResult.URL) + '</span></div><div class="card-view"><span class="value">' + DefaultFormatter(searchResult.Content) + '</span></div>';
+	return '<div class="card-view"><span class="value">' + FileNameFormatter(searchResult.Title, searchResult.URL) + '</span></div><div class="card-view"><span class="value">' + URLFormatter(searchResult.Organization) + '</span></div><div class="card-view"><span class="value">' + DefaultFormatter(searchResult.Content) + '</span></div>';
 }
 
 function applyFilter() {

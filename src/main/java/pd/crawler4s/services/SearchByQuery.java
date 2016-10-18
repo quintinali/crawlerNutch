@@ -35,12 +35,13 @@ public class SearchByQuery extends HttpServlet {
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
     String query = request.getParameter("query");
-    String scrollId = request.getParameter("result_from");
+    String fromStr = request.getParameter("result_from");
     String limitStr = request.getParameter("result_limit");
     Integer limit = Integer.parseInt(limitStr);
+    Integer from = Integer.parseInt(fromStr);
 
     ESdriver esd = (ESdriver) request.getServletContext().getAttribute("esd");
-    String fileList = esd.searchByQuery(query, scrollId, limit);
+    String fileList = esd.searchByQuery(query, from, limit);
     PrintWriter out = response.getWriter();
     out.print(fileList);
     out.flush();
