@@ -22,6 +22,9 @@ $(document).ready(function() {
 		"bSort": false,
 		"pageLength": 20,
 		"dom": 'tp',
+		"language": {
+			"emptyTable": "No entry matches!"
+		},
 		"fnDrawCallback": function ( oSettings ) {
 		    $(oSettings.nTHead).hide();
 		    $(oSettings.nTFoot).hide();
@@ -55,6 +58,7 @@ $(document).ready(function() {
 	        });
 	    }
 	});
+	$(".dataTables_empty").hide();
 	
 	$('#ResultsTable').on("click", ".more", function(){
 		if($(this).siblings(".shortenContent").is(":visible")) {
@@ -78,6 +82,7 @@ function search(query) {
 	g_currentQuery = $("#query").val();
 	
 	$.when(req_search(g_currentQuery)).done(function (searchResult) {
+		$(".dataTables_empty").show();
 		if (searchResult != null) {
 			g_totalCount = searchResult.ResultCount;
 			g_scrollID = searchResult.ScrollID;
@@ -143,7 +148,7 @@ function FileNameFormatter(value, url) {
 }
 
 function URLFormatter(value) {
-	return '<h5 class="text-success resultContent">' + extractDomain(value) + '</h5>'; 
+	return '<img class="searchResultFavicon" src="http://' + extractDomain(value) + '/favicon.ico" />' + '<h5 class="text-success resultContent">' + extractDomain(value) + '</h5>'; 
 }
 
 function DefaultFormatter(value) {

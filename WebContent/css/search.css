@@ -537,6 +537,7 @@ a.fileShortName {
 
 .card-view h5.resultContent {
     font-size: 12px;
+    display: inline-block;
 }
 
 .resultContent label{
@@ -559,4 +560,10 @@ a.fileShortName {
     padding: 5px 8px;
     border: none;
     border-bottom: 1px dashed #ddd;
+}
+
+.searchResultFavicon {
+	width: 16px;
+	height: 16px;
+	margin-right: 6px;
 }
