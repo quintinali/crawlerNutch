@@ -283,6 +283,8 @@ public class ESdriver {
         URL = "";
       }
 
+      String orgnization = (String) result.get("organization");
+
       /*if (!Content.equals("")) {
         int maxLength = (Content.length() < MAX_CHAR) ? Content.length()
             : MAX_CHAR;
@@ -293,6 +295,7 @@ public class ESdriver {
       file.addProperty("Title", Title);
       // file.addProperty("Time", Time);
       // file.addProperty("Type", fileType);
+      file.addProperty("Organization", orgnization);
       file.addProperty("URL", URL);
       file.addProperty("Content", Content);
       fileList.add(file);

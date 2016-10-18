@@ -97,18 +97,21 @@ public class MyCrawler extends WebCrawler implements Serializable {
     String predix = url.substring(0, prefixIndex - 1);
     String domain = url.substring(prefixIndex + 2, domainIndex);
 
-    String[] levels = domain.split("\\.");
-    int num = levels.length;
-    if (num < 1) {
-      return "";
-    }
-
-    if (!levels[0].equals("www") && num > 1) {
-      String parentdomain = "";
-      for (int i = 1; i < num; i++) {
-        parentdomain += levels[i] + ".";
+    if (!domain.equals("global.jaxa.jp") && !domain.equals("edu.jaxa.jp")
+        && !domain.equals("neo.ssa.esa.int")) {
+      String[] levels = domain.split("\\.");
+      int num = levels.length;
+      if (num < 1) {
+        return "";
       }
-      domain = parentdomain.substring(0, parentdomain.length() - 1);
+
+      if (!levels[0].equals("www") && num > 1) {
+        String parentdomain = "";
+        for (int i = 1; i < num; i++) {
+          parentdomain += levels[i] + ".";
+        }
+        domain = parentdomain.substring(0, parentdomain.length() - 1);
+      }
     }
 
     String domainUrl = predix + "://" + domain;
@@ -130,9 +133,13 @@ public class MyCrawler extends WebCrawler implements Serializable {
       organizationMap.put(domainUrl, title);
     }
 
+    // System.out.println(url);
     // System.out.println(domainUrl);
     // System.out.println("organization:" + organization);
 
+    if (organization.equals("undefined")) {
+      organization = "";
+    }
     return organization;
   }
 
@@ -212,13 +219,14 @@ public class MyCrawler extends WebCrawler implements Serializable {
 
   public static void main(String[] args) {
     // TODO Auto-generated method stub
-    /*String url = "http://neo.jpl.nasa.gov/risk/2010lf64.html";
+    String url = "http://global.jaxa.jp/press/2014/11/20141125_daichi2.html";
     MyCrawler crawler = new MyCrawler();
     String org = crawler.getOrganization(url);
-    System.out.println("org:" + org);*/
+    System.out.println("org:" + org);
   }
 
   public MyCrawler() {
+
   }
 
 }
