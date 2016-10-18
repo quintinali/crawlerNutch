@@ -4,9 +4,11 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.elasticsearch.action.bulk.BulkProcessor;
@@ -96,9 +98,8 @@ public class MyCrawler extends WebCrawler implements Serializable {
     int domainIndex = url.indexOf("/", prefixIndex + 2);
     String predix = url.substring(0, prefixIndex - 1);
     String domain = url.substring(prefixIndex + 2, domainIndex);
-
-    if (!domain.equals("global.jaxa.jp") && !domain.equals("edu.jaxa.jp")
-        && !domain.equals("neo.ssa.esa.int")) {
+    String[] skipList = {"global.jaxa.jp","edu.jaxa.jp","neo.ssa.esa.int"};
+    if(!Arrays.asList(skipList).contains(domain)) {
       String[] levels = domain.split("\\.");
       int num = levels.length;
       if (num < 1) {
@@ -130,16 +131,23 @@ public class MyCrawler extends WebCrawler implements Serializable {
       }
 
       organization = title;
-      organizationMap.put(domainUrl, title);
+      if(organization.indexOf("-") > -1) {
+    	  organization = organization.substring(0, organization.indexOf("-"));
+      }
+      if(organization.indexOf("|") > -1) {
+    	  organization = organization.substring(0, organization.indexOf("|"));
+      }
+      organization = organization.trim();
+      if (organization.equals("undefined")) {
+          organization = "";
+        }
+      organizationMap.put(domainUrl, organization);
     }
 
     // System.out.println(url);
     // System.out.println(domainUrl);
     // System.out.println("organization:" + organization);
 
-    if (organization.equals("undefined")) {
-      organization = "";
-    }
     return organization;
   }
 

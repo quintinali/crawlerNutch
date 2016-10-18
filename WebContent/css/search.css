@@ -540,6 +540,10 @@ a.fileShortName {
     display: inline-block;
 }
 
+.card-view h5.resultContent a{
+	color: #3c763d;
+}
+
 .resultContent label{
 	display: inline;
 	font-weight: normal;

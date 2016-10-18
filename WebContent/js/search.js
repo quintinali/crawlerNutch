@@ -1,5 +1,5 @@
-var g_currentQuery, g_totalCount, g_bLoading = false, g_hasMore = true, g_scrollID, g_resultCount, g_tableObj;
-var RESULT_LIMIT = 200;
+var g_currentQuery, g_totalCount, g_bLoading = false, g_hasMore = true, g_resultCount, g_tableObj;
+var RESULT_LIMIT = 100;
 
 $(document).ready(function() {
 	var query = getURLParameter('query');
@@ -20,7 +20,7 @@ $(document).ready(function() {
 	g_tableObj = $('#ResultsTable').DataTable({
 		"sPaginationType": "full_numbers",
 		"bSort": false,
-		"pageLength": 20,
+		"pageLength": 10,
 		"dom": 'tp',
 		"language": {
 			"emptyTable": "No entry matches!"
@@ -36,7 +36,6 @@ $(document).ready(function() {
 	    	g_bLoading = true;
 	    	$.when(req_search(g_currentQuery)).done(function (searchResult) {
 	    		if (searchResult != null) {
-	    			g_scrollID = searchResult.ScrollID;
 	    			var searchResults = searchResult.SearchResults;
 	    			if(searchResult.ResultCount < RESULT_LIMIT) {
 	    				g_hasMore = false;
@@ -78,14 +77,12 @@ function search(query) {
 	g_totalCount = g_resultCount = 0;
 	g_searchResult = [];
 	g_hasMore = true;
-	g_scrollID = null;
 	g_currentQuery = $("#query").val();
 	
 	$.when(req_search(g_currentQuery)).done(function (searchResult) {
 		$(".dataTables_empty").show();
 		if (searchResult != null) {
 			g_totalCount = searchResult.ResultCount;
-			g_scrollID = searchResult.ScrollID;
 			var searchResults = searchResult.SearchResults;
 			g_resultCount = searchResults.length;
 			if(g_resultCount < RESULT_LIMIT) {
@@ -110,7 +107,7 @@ function req_search(search) {
 		url : "SearchByQuery",
 		data : {
 			"query" : search,
-			"result_from": g_scrollID,
+			"result_from": g_resultCount,
 			"result_limit": RESULT_LIMIT
 		}
 	});
@@ -147,8 +144,10 @@ function FileNameFormatter(value, url) {
 	}
 }
 
-function URLFormatter(value) {
-	return '<img class="searchResultFavicon" src="http://' + extractDomain(value) + '/favicon.ico" />' + '<h5 class="text-success resultContent">' + extractDomain(value) + '</h5>'; 
+function URLFormatter(URL, org) {
+	if(!org) return '';
+	return '<h5 class="text-success resultContent"><a href="http://' + extractDomain(URL) + '">' + org + '</a></h5>'; 
+	//return '<img class="searchResultFavicon" src="http://' + extractDomain(URL) + '/favicon.ico" onError="$(this).remove();return false;"/>' + '<h5 class="text-success resultContent"><a href="http://' + extractDomain(URL) + '">' + org + '</a></h5>'; 
 }
 
 function DefaultFormatter(value) {
@@ -157,7 +156,7 @@ function DefaultFormatter(value) {
 
 function tableRowFormatter(searchResult) {
 	if(!searchResult) return '';
-	return '<div class="card-view"><span class="value">' + FileNameFormatter(searchResult.Title, searchResult.URL) + '</span></div><div class="card-view"><span class="value">' + URLFormatter(searchResult.Organization) + '</span></div><div class="card-view"><span class="value">' + DefaultFormatter(searchResult.Content) + '</span></div>';
+	return '<div class="card-view"><span class="value">' + FileNameFormatter(searchResult.Title, searchResult.URL) + '</span></div><div class="card-view"><span class="value">' + URLFormatter(searchResult.URL, searchResult.Organization) + '</span></div><div class="card-view"><span class="value">' + DefaultFormatter(searchResult.Content) + '</span></div>';
 }
 
 function applyFilter() {
@@ -167,6 +166,7 @@ function applyFilter() {
 }
 
 function extractDomain(url) {
+	if(!url) return url;
     var domain;
     //find & remove protocol (http, ftp, etc.) and get domain
     if (url.indexOf("://") > -1) {
