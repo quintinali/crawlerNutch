@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.elasticsearch.action.bulk.BulkProcessor;
@@ -98,8 +97,8 @@ public class MyCrawler extends WebCrawler implements Serializable {
     int domainIndex = url.indexOf("/", prefixIndex + 2);
     String predix = url.substring(0, prefixIndex - 1);
     String domain = url.substring(prefixIndex + 2, domainIndex);
-    String[] skipList = {"global.jaxa.jp","edu.jaxa.jp","neo.ssa.esa.int"};
-    if(!Arrays.asList(skipList).contains(domain)) {
+    String[] skipList = { "global.jaxa.jp", "edu.jaxa.jp", "neo.ssa.esa.int" };
+    if (!Arrays.asList(skipList).contains(domain)) {
       String[] levels = domain.split("\\.");
       int num = levels.length;
       if (num < 1) {
@@ -131,16 +130,21 @@ public class MyCrawler extends WebCrawler implements Serializable {
       }
 
       organization = title;
-      if(organization.indexOf("-") > -1) {
-    	  organization = organization.substring(0, organization.indexOf("-"));
+      /*if(organization.indexOf("-") > -1) {
+        organization = organization.substring(0, organization.indexOf("-"));
       }
       if(organization.indexOf("|") > -1) {
-    	  organization = organization.substring(0, organization.indexOf("|"));
+        organization = organization.substring(0, organization.indexOf("|"));
+      }*/
+
+      if (organization.equals(
+          "NASA Jet Propulsion Laboratory (JPL) - Space Mission and Science News, Videos and Images")) {
+        organization = "NASA Jet Propulsion Laboratory (JPL)";
       }
       organization = organization.trim();
       if (organization.equals("undefined")) {
-          organization = "";
-        }
+        organization = "";
+      }
       organizationMap.put(domainUrl, organization);
     }
 
@@ -149,6 +153,7 @@ public class MyCrawler extends WebCrawler implements Serializable {
     // System.out.println("organization:" + organization);
 
     return organization;
+
   }
 
   // for import cvs
