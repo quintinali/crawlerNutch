@@ -26,7 +26,7 @@ import pd.crawler4s.driver.ESdriver;
 public class MyCrawler extends WebCrawler implements Serializable {
   private final static Pattern FILTERS = Pattern
       .compile(".*(\\.(css|js|gif|jpg" + "|png|mp3|mp3|zip|gz))$");
-  private final String index = "pd";
+  private final String index = "pdcrawler";
   private final String type = "crawler4j";
   public static ESdriver esd = new ESdriver();
   public static BulkProcessor bulkProcessor = BulkProcessor

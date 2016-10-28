@@ -60,7 +60,7 @@ $(document).ready(function() {
 	$(".dataTables_empty").hide();
 	
 	$('#ResultsTable').on("click", ".more", function(){
-		if($(this).siblings(".shortenContent").is(":visible")) {
+		/*if($(this).siblings(".shortenContent").is(":visible")) {
 			$(this).text("[Less]");
 			$(this).siblings(".shortenContent").css("display", "none");
 			$(this).siblings(".fullContent").css("display", "inline");
@@ -68,7 +68,9 @@ $(document).ready(function() {
 			$(this).text("[More]");
 			$(this).siblings(".shortenContent").css("display", "inline");
 			$(this).siblings(".fullContent").css("display", "none");
-		}
+		}*/
+		
+		window.open($(this).parents("td").first().find("h4 a").attr("href"));
 	});
 });
 
@@ -118,6 +120,8 @@ function processTableDataSource(dataSource) {
 	for(var i = 0; i < dataSource.length; i++) {
 		if(dataSource[i].Content.length > 500) {
 			dataSource[i].Content = '<label class="shortenContent">' + dataSource[i].Content.substring(0, 500) + '...' + '</label><label class="fullContent">' + dataSource[i].Content + '</label><span class="more">[More]</span>';
+		}else{
+			dataSource[i].Content = '<label class="shortenContent">' + dataSource[i].Content + '</label><label class="fullContent">' + dataSource[i].Content + '</label><span class="more">[More]</span>';
 		}
 	}
 	return dataSource;
