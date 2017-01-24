@@ -44,7 +44,7 @@ import com.google.gson.JsonObject;
 public class ESdriver {
   String cluster = "elasticsearch";
   String index = "pdcrawler";
-  String crawlerType = "crawler4j";
+  String crawlerType = "filteredCrawler4j";
   final Integer MAX_CHAR = 500;
 
   Node node;

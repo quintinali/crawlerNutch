@@ -130,13 +130,6 @@ public class MyCrawler extends WebCrawler implements Serializable {
       }
 
       organization = title;
-      /*if(organization.indexOf("-") > -1) {
-        organization = organization.substring(0, organization.indexOf("-"));
-      }
-      if(organization.indexOf("|") > -1) {
-        organization = organization.substring(0, organization.indexOf("|"));
-      }*/
-
       if (organization.equals(
           "NASA Jet Propulsion Laboratory (JPL) - Space Mission and Science News, Videos and Images")) {
         organization = "NASA Jet Propulsion Laboratory (JPL)";
@@ -148,87 +141,8 @@ public class MyCrawler extends WebCrawler implements Serializable {
       organizationMap.put(domainUrl, organization);
     }
 
-    // System.out.println(url);
-    // System.out.println(domainUrl);
-    // System.out.println("organization:" + organization);
-
     return organization;
-
   }
-
-  // for import cvs
-  /* public void loadFromCSV(String inputFileName, String outputFile)
-      throws Exception {
-  
-    SparkConf conf = new SparkConf().setAppName("Testing")
-        .setMaster("local[2]");
-    JavaSparkContext sc = new JavaSparkContext(conf);
-  
-    JavaRDD<String> importRDD = sc.textFile(inputFileName);
-  
-    JavaPairRDD<String, Integer> domainRDD = importRDD
-        .mapToPair(new PairFunction<String, String, Integer>() {
-          @Override
-          public Tuple2<String, Integer> call(String arg0) throws Exception {
-            // TODO Auto-generated method stub
-            String line = arg0;
-            String url = getURL(line);
-            String domain = "";
-            if (url.startsWith("http")) {
-              domain = getDomainName(url);
-            }
-  
-            return new Tuple2<String, Integer>(domain, 1);
-          }
-        }).reduceByKey(new Function2<Integer, Integer, Integer>() {
-          private static final long serialVersionUID = 1L;
-  
-          @Override
-          public Integer call(Integer arg0, Integer arg1) throws Exception {
-            // TODO Auto-generated method stub
-            return arg0 + arg1;
-          }
-        }).sortByKey(false);
-  
-    System.out.println(domainRDD.collect());
-  
-    domainRDD.keys().coalesce(1).saveAsTextFile(outputFile);
-  }
-  
-  public String getURL(String line) throws URISyntaxException {
-  
-    String[] parts = line.split(",");
-    int length = parts.length;
-    String url = "";
-    for (int i = length - 1; i > 0; i--) {
-      url = parts[i];
-      if (url.startsWith("http://") || url.startsWith("https://")) {
-        break;
-      }
-    }
-  
-    return url;
-  }
-  
-  public String getDomainName(String url) {
-    if (url.length() > 400) {
-      url = url.substring(0, 400);
-    }
-    URI uri;
-    try {
-      uri = new URI(url);
-      String domain = uri.getHost();
-      if (domain == null) {
-        return "error";
-      }
-      return domain.startsWith("www.") ? domain.substring(4) : domain;
-    } catch (URISyntaxException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-    return "error";
-  
-  }*/
 
   public static void main(String[] args) {
     // TODO Auto-generated method stub

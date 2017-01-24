@@ -18,18 +18,18 @@ public class Controller {
     if (args.length > 0) {
       crawlStorageFolder = args[0];
     } else {
-      crawlStorageFolder = "C:/crawlertest/root";
+      crawlStorageFolder = "E:/crawlertest/root";
     }
 
     int numberOfCrawlers = 10;
 
     CrawlConfig config = new CrawlConfig();
     config.setCrawlStorageFolder(crawlStorageFolder);
-    config.setMaxDepthOfCrawling(5000);
-    config.setMaxPagesToFetch(1000000);
+    config.setMaxDepthOfCrawling(100);
+    config.setMaxPagesToFetch(100000);
     config.setResumableCrawling(false);
-    
-    config.setSocketTimeout(10000); 
+
+    config.setSocketTimeout(10000);
     config.setConnectionTimeout(10000);
 
     /*
@@ -54,8 +54,10 @@ public class Controller {
      */
     PageFetcher pageFetcher = new PageFetcher(config);
     RobotstxtConfig robotstxtConfig = new RobotstxtConfig();
-    RobotstxtServer robotstxtServer = new RobotstxtServer(robotstxtConfig, pageFetcher);
-    CrawlController controller = new CrawlController(config, pageFetcher, robotstxtServer);
+    RobotstxtServer robotstxtServer = new RobotstxtServer(robotstxtConfig,
+        pageFetcher);
+    CrawlController controller = new CrawlController(config, pageFetcher,
+        robotstxtServer);
 
     /*
      * For each crawl, you need to add some seed urls. These are the first
