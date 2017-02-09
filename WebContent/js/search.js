@@ -108,14 +108,13 @@ function req_search(search) {
 function processTableDataSource(dataSource) {
 	if(null == dataSource || 0 == dataSource.length) return dataSource;
 	for(var i = 0; i < dataSource.length; i++) {
-		/*if(dataSource[i].Content.length > 500) {
-			dataSource[i].Content = '<label class="shortenContent">' + dataSource[i].Content.substring(0, 500) + '...' + '</label><label class="fullContent">' + dataSource[i].Content + '</label><span class="more">[More]</span>';
+		if(dataSource[i].summary.length > 500) {
+			dataSource[i].Content = '<label class="shortenContent">' + dataSource[i].summary.substring(0, 500) + '...' + '</label><label class="fullContent">' + dataSource[i].Content + '</label><span class="more">[More]</span>';
 		}else{
-			dataSource[i].Content = '<label class="shortenContent">' + dataSource[i].Content + '</label><label class="fullContent">' + dataSource[i].Content + '</label><span class="more">[More]</span>';
-		}*/
+			dataSource[i].Content = '<label class="shortenContent">' + dataSource[i].summary + '</label><label class="fullContent">' + dataSource[i].Content + '</label><span class="more">[More]</span>';
+		}
 		
-		dataSource[i].Content = '<label class="shortenContent">' + dataSource[i].summary + '</label><label class="fullContent">' + dataSource[i].Content + '</label><span class="more">[More]</span>';
-		
+		//dataSource[i].Content = '<label class="shortenContent">' + dataSource[i].summary + '</label><label class="fullContent">' + dataSource[i].Content + '</label><span class="more">[More]</span>';	
 	}
 	return dataSource;
 }
@@ -158,8 +157,9 @@ function tableRowFormatter(searchResult) {
 	var row = "";
 	row += '<div class="card-view"><span class="value">' + FileNameFormatter(searchResult.Title, searchResult.URL) + '</span></div>';
 	row += '<div class="card-view"><span class="value">' + URLFormatter(searchResult.URL, searchResult.Organization) + '</span></div>';
-	row += '<div class="card-view"><span class="value">keywords: ' +  searchResult.keywords + '</span></div>';
-	row += '<div class="card-view"><span class="value">chunker keywords: ' +  searchResult.chunkerKeyword+ '</span></div>';
+	row += '<div class="card-view"><span class="value"><i>keywords</i>: ' +  searchResult.keywords + '</span></div>';
+	row += '<div class="card-view"><span class="value"><i>chunker keywords</i>: ' +  searchResult.chunkerKeyword+ '</span></div>';
+	row += '<div class="card-view"><span class="value"><i>gold keywords</i>: ' +  searchResult.goldKeywords+ '</span></div>';
 	row += '<div class="card-view"><span class="value">' + DefaultFormatter(searchResult.Content) + '</span></div>';
 
 	return row;

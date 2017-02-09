@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
+import org.elasticsearch.ElasticsearchException;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
@@ -46,14 +48,23 @@ public class OpenNLPPhraseExtractor {
 
   TextRankKeyword textRank = null;
 
+  String tmpIndex = "tmpindex";
+
   private static Pattern untokenizedParenPattern1 = Pattern
       .compile("([^ ])([({)}])");
   private static Pattern untokenizedParenPattern2 = Pattern
       .compile("([({)}])([^ ])");
 
-  public OpenNLPPhraseExtractor() {
+  public OpenNLPPhraseExtractor(ESdriver es) {
 
     String modelPath = "E:\\";
+
+    try {
+      es.putMapping(tmpIndex);
+    } catch (ElasticsearchException | IOException e1) {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+    }
 
     try {
       SentenceModel sm = new SentenceModel(
@@ -79,15 +90,15 @@ public class OpenNLPPhraseExtractor {
       NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
       textRank = new TextRankKeyword();
-      textRank.nKeyword = 5;
+      textRank.nKeyword = 8;
     } catch (IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
 
-  public JsonObject NounPhraseExtractor(ESdriver es, String indexName,
-      String text) throws InterruptedException, ExecutionException {
+  public JsonObject NounPhraseExtractor(ESdriver es, String text)
+      throws InterruptedException, ExecutionException {
 
     JsonObject phraseJson = new JsonObject();
     if (text == null || text.equals("")) {
@@ -124,7 +135,7 @@ public class OpenNLPPhraseExtractor {
         String np = chunkStrings[j];
         if (chunks[j].getType().equals("NP")) {
 
-          String customNP = es.customAnalyzing(indexName, np);
+          String customNP = es.customAnalyzing(this.tmpIndex, np);
           if (!customNP.isEmpty()) {
             phrases.add(customNP);
             int pos = chunks[j].getStart();
@@ -153,7 +164,7 @@ public class OpenNLPPhraseExtractor {
     return String.join(",", ners);
   }
 
-  public String keyPhraseExtractor(JsonObject titleTerms,
+  public String keyPhraseExtractor(ESdriver es, JsonObject titleTerms,
       JsonObject contentTerms) throws IOException {
 
     String title = titleTerms.get("phrase").toString().replaceAll(" ", "-")
@@ -161,13 +172,13 @@ public class OpenNLPPhraseExtractor {
     String content = contentTerms.get("phrase").toString().replaceAll(" ", "-")
         .replaceAll(",", " ");
 
-    String keywords = this.keyPhraseExtractor(title, content);
+    String keywords = this.keyPhraseExtractor(es, title, content);
     keywords = keywords.replaceAll("-", " ");
 
     return keywords;
   }
 
-  public String keyPhraseExtractor(String title, String content)
+  public String keyPhraseExtractor(ESdriver es, String title, String content)
       throws IOException {
 
     if (title == null) {
@@ -179,9 +190,24 @@ public class OpenNLPPhraseExtractor {
     }
 
     String keywords = textRank.getKeyword(title, content);
-    keywords = keywords.replaceAll("#", ",");
+    // keywords = keywords.replaceAll("#", ",");
+    String[] keywordArray = keywords.split("#");
+    List<String> keywordList = new ArrayList<String>();
+    for (int i = 0; i < keywordArray.length; i++) {
+      String keyword = keywordArray[i];
+      try {
+        keyword = es.customAnalyzing(tmpIndex, keyword);
+      } catch (Exception e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
 
-    return keywords;
+      if (!keyword.isEmpty() && keywordList.size() < 5) {
+        keywordList.add(keyword);
+      }
+    }
+
+    return String.join(",", keywordList);
   }
 
   public String gensimKeyPhraseExtractor(JsonObject titleTerms,
@@ -246,11 +272,11 @@ public class OpenNLPPhraseExtractor {
       e2.printStackTrace();
     }
 
-    OpenNLPPhraseExtractor extrctor = new OpenNLPPhraseExtractor();
+    OpenNLPPhraseExtractor extrctor = new OpenNLPPhraseExtractor(es);
     // String s = "Autobiography - Wikipedia";
     JsonObject terms = null;
     try {
-      terms = extrctor.NounPhraseExtractor(es, "testindex", text);
+      terms = extrctor.NounPhraseExtractor(es, text);
     } catch (Exception e1) {
       // TODO Auto-generated catch block
       e1.printStackTrace();

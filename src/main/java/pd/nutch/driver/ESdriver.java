@@ -51,8 +51,8 @@ import com.google.gson.JsonObject;
 
 public class ESdriver {
   String cluster = "elasticsearch";
-  String index = "testindex";
-  String crawlerType = "testdoc";
+  String index = "nutchseedindex";
+  String crawlerType = "doc";
   final Integer MAX_CHAR = 500;
 
   Node node;
@@ -243,20 +243,23 @@ public class ESdriver {
       String fileType = (String) result.get("fileType");
       String Time = (String) result.get("tstamp");
       String Content = (String) result.get("content");
-      String chunkerKeyword = (String) result.get("content_chunker_keywords");
-      String keywords = (String) result.get("content_orignal_Keywords");
+      String chunkerKeyword = (String) result.get("chunker_keywords");
+      String keywords = (String) result.get("original_keywords");
+      String goldKeywords = (String) result.get("gold_keywords");
 
       String summary = Content;
 
       String Title, URL = null;
+      Title = (String) result.get("title");
+      URL = (String) result.get("url");
 
-      if (fileType != null && fileType.equals("webpage")) {
+      /*if (fileType != null && fileType.equals("webpage")) {
         Title = (String) result.get("title");
         URL = (String) result.get("url");
       } else {
         Title = (String) result.get("fullName");
         URL = "";
-      }
+      }*/
 
       String orgnization = (String) result.get("organization");
 
@@ -283,9 +286,11 @@ public class ESdriver {
       file.addProperty("Content", Content);
       file.addProperty("chunkerKeyword", chunkerKeyword);
       file.addProperty("keywords", keywords);
+      file.addProperty("goldKeywords", goldKeywords);
       file.addProperty("summary", summary);
       fileList.add(file);
     }
+
     JsonElement fileList_Element = gson.toJsonTree(fileList);
     JsonObject PDResults = new JsonObject();
 
