@@ -1,4 +1,4 @@
-package pd.crawler4s.services;
+package pd.nutch.services;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import pd.crawler4s.driver.ESdriver;
+import pd.nutch.driver.ESdriver;
 
 /**
  * Servlet implementation class SearchByQuery

@@ -5,4 +5,4 @@
  * @author Yongyao
  *
  */
-package pd.crawler4s.structure;
+package pd.nutch.crawler;

@@ -60,16 +60,6 @@ $(document).ready(function() {
 	$(".dataTables_empty").hide();
 	
 	$('#ResultsTable').on("click", ".more", function(){
-		/*if($(this).siblings(".shortenContent").is(":visible")) {
-			$(this).text("[Less]");
-			$(this).siblings(".shortenContent").css("display", "none");
-			$(this).siblings(".fullContent").css("display", "inline");
-		} else {
-			$(this).text("[More]");
-			$(this).siblings(".shortenContent").css("display", "inline");
-			$(this).siblings(".fullContent").css("display", "none");
-		}*/
-		
 		window.open($(this).parents("td").first().find("h4 a").attr("href"));
 	});
 });
@@ -118,11 +108,14 @@ function req_search(search) {
 function processTableDataSource(dataSource) {
 	if(null == dataSource || 0 == dataSource.length) return dataSource;
 	for(var i = 0; i < dataSource.length; i++) {
-		if(dataSource[i].Content.length > 500) {
+		/*if(dataSource[i].Content.length > 500) {
 			dataSource[i].Content = '<label class="shortenContent">' + dataSource[i].Content.substring(0, 500) + '...' + '</label><label class="fullContent">' + dataSource[i].Content + '</label><span class="more">[More]</span>';
 		}else{
 			dataSource[i].Content = '<label class="shortenContent">' + dataSource[i].Content + '</label><label class="fullContent">' + dataSource[i].Content + '</label><span class="more">[More]</span>';
-		}
+		}*/
+		
+		dataSource[i].Content = '<label class="shortenContent">' + dataSource[i].summary + '</label><label class="fullContent">' + dataSource[i].Content + '</label><span class="more">[More]</span>';
+		
 	}
 	return dataSource;
 }
@@ -160,7 +153,16 @@ function DefaultFormatter(value) {
 
 function tableRowFormatter(searchResult) {
 	if(!searchResult) return '';
-	return '<div class="card-view"><span class="value">' + FileNameFormatter(searchResult.Title, searchResult.URL) + '</span></div><div class="card-view"><span class="value">' + URLFormatter(searchResult.URL, searchResult.Organization) + '</span></div><div class="card-view"><span class="value">' + DefaultFormatter(searchResult.Content) + '</span></div>';
+	//return '<div class="card-view"><span class="value">' + FileNameFormatter(searchResult.Title, searchResult.URL) + '</span></div><div class="card-view"><span class="value">' + URLFormatter(searchResult.URL, searchResult.Organization) + '</span></div><div class="card-view"><span class="value">' + DefaultFormatter(searchResult.Content) + '</span></div>';
+	//return '<div class="card-view"><span class="value">' + FileNameFormatter(searchResult.Title, searchResult.URL) + '</span></div><div class="card-view"><span class="value">' + URLFormatter(searchResult.URL, searchResult.Organization) + '</span></div><div class="card-view"><span class="value">keywords: ' +  searchResult.keywords + '</span></div><div class="card-view"><span class="value">' + DefaultFormatter(searchResult.Content) + '</span></div>';
+	var row = "";
+	row += '<div class="card-view"><span class="value">' + FileNameFormatter(searchResult.Title, searchResult.URL) + '</span></div>';
+	row += '<div class="card-view"><span class="value">' + URLFormatter(searchResult.URL, searchResult.Organization) + '</span></div>';
+	row += '<div class="card-view"><span class="value">keywords: ' +  searchResult.keywords + '</span></div>';
+	row += '<div class="card-view"><span class="value">chunker keywords: ' +  searchResult.chunkerKeyword+ '</span></div>';
+	row += '<div class="card-view"><span class="value">' + DefaultFormatter(searchResult.Content) + '</span></div>';
+
+	return row;
 }
 
 function applyFilter() {

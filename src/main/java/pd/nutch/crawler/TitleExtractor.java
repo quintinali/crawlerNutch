@@ -1,4 +1,4 @@
-package pd.crawler4s.crawler;
+package pd.nutch.crawler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,6 +40,10 @@ public class TitleExtractor {
 
     // ContentType is an inner class defined below
     ContentType contentType = getContentTypeHeader(conn);
+    if (contentType == null) {
+      return "";
+    }
+
     if (!contentType.contentType.equals("text/html"))
       return null; // don't continue if not HTML
     else {
