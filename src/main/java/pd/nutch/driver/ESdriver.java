@@ -5,9 +5,11 @@ import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -22,6 +24,7 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.action.suggest.SuggestRequestBuilder;
 import org.elasticsearch.action.suggest.SuggestResponse;
 import org.elasticsearch.client.Client;
@@ -34,7 +37,6 @@ import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.Fuzziness;
-import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -223,22 +225,27 @@ public class ESdriver {
 
     int docCount = getDocCount(index, qb, crawlerType);
 
-    SearchResponse scrollResp = null;
+    SearchResponse searchResp = null;
 
     SearchRequestBuilder sbuilder = client.prepareSearch(index)
-        .setTypes(crawlerType).addHighlightedField("title")
-        .addHighlightedField("content").setScroll(new TimeValue(60000))
-        .addSort("tstamp", SortOrder.ASC).setQuery(qb).setFrom(from)
-        .setSize(limit).setHighlighterPreTags("<b>")
+        .setTypes(crawlerType).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+        .setQuery(qb).setFrom(from).setSize(limit)
+        .addSort("tstamp", SortOrder.ASC).addHighlightedField("title")
+        .addHighlightedField("content").setHighlighterPreTags("<b>")
         .setHighlighterPostTags("</b>").setHighlighterFragmentSize(500)
         .setHighlighterNumOfFragments(1);
 
-    scrollResp = sbuilder.execute().actionGet();
+    System.out.println(sbuilder.toString());
+
+    searchResp = sbuilder.execute().actionGet();
+
+    long size = searchResp.getHits().getHits().length;
+    System.out.println("size:" + size);
 
     Gson gson = new Gson();
     List<JsonObject> fileList = new ArrayList<JsonObject>();
 
-    for (SearchHit hit : scrollResp.getHits().getHits()) {
+    for (SearchHit hit : searchResp.getHits().getHits()) {
       Map<String, Object> result = hit.getSource();
       String fileType = (String) result.get("fileType");
       String Time = (String) result.get("tstamp");
@@ -279,14 +286,49 @@ public class ESdriver {
         }
       }
 
+      // combine keywords
+      List<String> keywordList = new ArrayList<String>();
+      if (keywords != null && keywords.length() > 0) {
+        // System.out.println(keywords);
+        String[] keywordArray = keywords.split(",");
+        for (String s : keywordArray) {
+          keywordList.add(s);
+        }
+      }
+
+      if (chunkerKeyword != null && chunkerKeyword.length() > 0) {
+        String[] chunkerKeywordsArray = chunkerKeyword.split(",");
+        for (String s : chunkerKeywordsArray) {
+          if (s.split(" ").length < 5)
+            keywordList.add(s);
+        }
+      }
+
+      if (goldKeywords != null && goldKeywords.length() > 0) {
+        String[] goldKeywordArray = goldKeywords.split(",");
+        for (String s : goldKeywordArray) {
+          keywordList.add(s);
+        }
+      }
+
+      String allKeywords = "";
+      Set<String> mySet = new HashSet<String>(keywordList);
+      for (String s : mySet) {
+        allKeywords += s + ", ";
+      }
+      if (allKeywords.length() > 1) {
+        allKeywords = allKeywords.substring(0, allKeywords.length() - 1);
+      }
+
       JsonObject file = new JsonObject();
       file.addProperty("Title", Title);
       file.addProperty("Organization", orgnization);
       file.addProperty("URL", URL);
       file.addProperty("Content", Content);
-      file.addProperty("chunkerKeyword", chunkerKeyword);
-      file.addProperty("keywords", keywords);
-      file.addProperty("goldKeywords", goldKeywords);
+      // file.addProperty("chunkerKeyword", chunkerKeyword);
+      // file.addProperty("keywords", keywords);
+      // file.addProperty("goldKeywords", goldKeywords);
+      file.addProperty("allKeywords", allKeywords);
       file.addProperty("summary", summary);
       fileList.add(file);
     }
