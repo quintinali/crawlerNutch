@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.Gson;
 
-import pd.nutch.driver.ESdriver;
+import pd.nutch.driver.ESDriver;
 import pd.nutch.structure.AutoCompleteData;
 
 /**
@@ -51,8 +51,8 @@ public class AutoComplete extends HttpServlet {
     String chars = request.getParameter("chars");
 
     List<AutoCompleteData> result = new ArrayList<AutoCompleteData>();
-    ESdriver esd = (ESdriver) request.getServletContext().getAttribute("esd");
-    List<String> suggestList = esd.autoComplete(chars);
+    ESDriver esd = (ESDriver) request.getServletContext().getAttribute("esd");
+    List<String> suggestList = esd.autoComplete("nutch", chars);
     for (final String item : suggestList) {
       result.add(new AutoCompleteData(item, item));
     }

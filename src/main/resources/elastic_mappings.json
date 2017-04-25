@@ -1,0 +1,15 @@
+{
+  "_default_": {
+    "properties": {
+      "title": {
+        "type": "string",
+        "analyzer": "csv",
+        "fielddata": true
+      },
+      "content": {
+        "type": "string",
+        "analyzer": "csv"
+      }
+    }
+  }
+}

@@ -29,7 +29,7 @@ import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.Span;
-import pd.nutch.driver.ESdriver;
+import pd.nutch.driver.ESDriver;
 import pd.nutch.textrank.TextRankKeyword;
 
 /**
@@ -55,7 +55,7 @@ public class OpenNLPPhraseExtractor {
   private static Pattern untokenizedParenPattern2 = Pattern
       .compile("([({)}])([^ ])");
 
-  public OpenNLPPhraseExtractor(ESdriver es) {
+  public OpenNLPPhraseExtractor(ESDriver es) {
 
     String modelPath = "E:\\";
 
@@ -97,7 +97,7 @@ public class OpenNLPPhraseExtractor {
     }
   }
 
-  public JsonObject NounPhraseExtractor(ESdriver es, String text)
+  public JsonObject NounPhraseExtractor(ESDriver es, String text)
       throws InterruptedException, ExecutionException {
 
     JsonObject phraseJson = new JsonObject();
@@ -164,7 +164,7 @@ public class OpenNLPPhraseExtractor {
     return String.join(",", ners);
   }
 
-  public String keyPhraseExtractor(ESdriver es, JsonObject titleTerms,
+  public String keyPhraseExtractor(ESDriver es, JsonObject titleTerms,
       JsonObject contentTerms) throws IOException {
 
     String title = titleTerms.get("phrase").toString().replaceAll(" ", "-")
@@ -178,7 +178,7 @@ public class OpenNLPPhraseExtractor {
     return keywords;
   }
 
-  public String keyPhraseExtractor(ESdriver es, String title, String content)
+  public String keyPhraseExtractor(ESDriver es, String title, String content)
       throws IOException {
 
     if (title == null) {
@@ -264,7 +264,7 @@ public class OpenNLPPhraseExtractor {
 
     String text = "Catalog Page for PIA19439 PIA19439: Five New Crater Names for Mercury  Target Name:, Mercury  Is a satellite of: Sol (our sun)  Mission: MESSENGER    Spacecraft: MESSENGER  Product Size: 2683 x 2175 pixels (w x h)   Produced By: Johns Hopkins University/APL    Full-Res TIFF: PIA19439.tif (17.51 MB)  Full-Res JPEG: PIA19439.jpg (599.6 kB)   Click on the image above to download a moderately sized image in JPEG format (possibly reduced in size from original) Original Caption Released with Image: Five previously unnamed craters on Mercury now have names. MESSENGER's Education and Public Outreach (EPO) team led a contest that solicited naming suggestions from the public via a competition website . In total, 3,600 contest entries were received and a semi-final list of 17 names were submitted to the International Astronomical Union (IAU) for consideration. The IAU selected the final five crater names, keeping with the convention that Mercury's craters are named after those who have made significant contributions to the humanities. And the winners are: Carolan : (83.8° N, 31.7° E) Named for Turlough O'Carolan, the Irish musician and composer (1670-1738) Enheduanna : (48.3° N, 326.2° E) Named for the author and poet from ancient Mesopotamia Karsh (35.6° S, 78.9° E) Named for Yousuf Karsh, twentieth century Armenian-Canadian portrait photographer Kulthum (50.7° N, 93.5° E) Named for Umm Kulthum, twentieth century Egyptian singer, songwriter, and actress Rivera : (69.3° N, 32.4° E) Named for Diego Rivera, twentieth century Mexican painter and muralist Watch an animation showing the locations of the five newly named craters, or view them on this graphic along with the IAU news release. Read the MESSENGER mission news story for additional details. The MESSENGER spacecraft is the first ever to orbit the planet Mercury, and the spacecraft's seven scientific instruments and radio science investigation are unraveling the history and evolution of the Solar System's innermost planet. In the mission's more than four years of orbital operations, MESSENGER has acquired over 250,000 images and extensive other data sets. MESSENGER's highly successful orbital mission is about to come to an end , as the spacecraft runs out of propellant and the force of solar gravity causes it to impact the surface of Mercury on April 30, 2015. For information regarding the use of images, see the MESSENGER image use policy . Image Credit: NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington Image Addition Date: 2015-04-29";
 
-    ESdriver es = new ESdriver();
+    ESDriver es = new ESDriver();
     try {
       es.putMapping("testindex");
     } catch (Exception e2) {

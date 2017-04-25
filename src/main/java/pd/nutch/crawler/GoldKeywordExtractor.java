@@ -18,7 +18,7 @@ import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 
-import pd.nutch.driver.ESdriver;
+import pd.nutch.driver.ESDriver;
 
 public class GoldKeywordExtractor {
 
@@ -78,13 +78,13 @@ public class GoldKeywordExtractor {
       "Trajectory analysis", "Transit", "Variational Analysis",
       "Vulnerability Analysis" };
 
-  public void extractKeyWordFromGoldenText(ESdriver es, String index,
+  public void extractKeyWordFromGoldenText(ESDriver es, String index,
       String type) {
 
     es.createBulkProcesser();
 
     BoolQueryBuilder bq = this.createVocabularyQuery();
-    SearchRequestBuilder scrollBuilder = es.client.prepareSearch(index)
+    SearchRequestBuilder scrollBuilder = es.getClient().prepareSearch(index)
         .setTypes(type).setScroll(new TimeValue(60000)).setQuery(bq)
         .setSize(100).setExplain(true);
 
@@ -141,10 +141,10 @@ public class GoldKeywordExtractor {
           e.printStackTrace();
         }
 
-        es.bulkProcessor.add(ur);
+        es.getBulkProcessor().add(ur);
       }
 
-      scrollResp = es.client.prepareSearchScroll(scrollResp.getScrollId())
+      scrollResp = es.getClient().prepareSearchScroll(scrollResp.getScrollId())
           .setScroll(new TimeValue(600000)).execute().actionGet();
 
       if (scrollResp.getHits().getHits().length == 0)

@@ -113,9 +113,7 @@ function processTableDataSource(dataSource) {
 		}else{
 			dataSource[i].Content = '<label class="shortenContent">' + dataSource[i].summary + '</label><label class="fullContent">' + dataSource[i].Content + '</label><span class="more">[More]</span>';
 		}
-		
-		//dataSource[i].Content = '<label class="shortenContent">' + dataSource[i].summary + '</label><label class="fullContent">' + dataSource[i].Content + '</label><span class="more">[More]</span>';	
-	}
+			}
 	return dataSource;
 }
 
@@ -142,7 +140,7 @@ function FileNameFormatter(value, url) {
 
 function URLFormatter(URL, org) {
 	if(!org) return '';
-	return '<h5 class="text-success resultContent"><a href="http://' + extractDomain(URL) + '">' + org + '</a></h5>'; 
+	return '<h5 class="text-success resultContent"><a href="' + URL + '">' + URL + '</a></h5>'; 
 	//return '<img class="searchResultFavicon" src="http://' + extractDomain(URL) + '/favicon.ico" onError="$(this).remove();return false;"/>' + '<h5 class="text-success resultContent"><a href="http://' + extractDomain(URL) + '">' + org + '</a></h5>'; 
 }
 
@@ -152,14 +150,14 @@ function DefaultFormatter(value) {
 
 function tableRowFormatter(searchResult) {
 	if(!searchResult) return '';
-	//return '<div class="card-view"><span class="value">' + FileNameFormatter(searchResult.Title, searchResult.URL) + '</span></div><div class="card-view"><span class="value">' + URLFormatter(searchResult.URL, searchResult.Organization) + '</span></div><div class="card-view"><span class="value">' + DefaultFormatter(searchResult.Content) + '</span></div>';
-	//return '<div class="card-view"><span class="value">' + FileNameFormatter(searchResult.Title, searchResult.URL) + '</span></div><div class="card-view"><span class="value">' + URLFormatter(searchResult.URL, searchResult.Organization) + '</span></div><div class="card-view"><span class="value">keywords: ' +  searchResult.keywords + '</span></div><div class="card-view"><span class="value">' + DefaultFormatter(searchResult.Content) + '</span></div>';
 	var row = "";
 	row += '<div class="card-view"><span class="value">' + FileNameFormatter(searchResult.Title, searchResult.URL) + '</span></div>';
-	row += '<div class="card-view"><span class="value">' + URLFormatter(searchResult.URL, searchResult.Organization) + '</span></div>';
-	row += '<div class="card-view"><span class="value"><i>keywords</i>: ' +  searchResult.keywords + '</span></div>';
-	row += '<div class="card-view"><span class="value"><i>chunker keywords</i>: ' +  searchResult.chunkerKeyword+ '</span></div>';
-	row += '<div class="card-view"><span class="value"><i>gold keywords</i>: ' +  searchResult.goldKeywords+ '</span></div>';
+	row += '<div class="card-view"><span class="value">' + URLFormatter(searchResult.URL, searchResult.URL) + '</span></div>';
+	//row += '<div class="card-view"><span class="value">' + URLFormatter(searchResult.URL, searchResult.Organization) + '</span></div>';
+	//row += '<div class="card-view"><span class="value"><i>keywords</i>: ' +  searchResult.keywords + '</span></div>';
+	//row += '<div class="card-view"><span class="value"><i>chunker keywords</i>: ' +  searchResult.chunkerKeyword+ '</span></div>';
+	//row += '<div class="card-view"><span class="value"><i>gold keywords</i>: ' +  searchResult.goldKeywords+ '</span></div>';
+	row += '<div class="card-view"><span class="value"><i>keywords</i>: ' +  searchResult.allKeywords + '</span></div>';
 	row += '<div class="card-view"><span class="value">' + DefaultFormatter(searchResult.Content) + '</span></div>';
 
 	return row;
