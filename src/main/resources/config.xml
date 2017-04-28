@@ -22,6 +22,7 @@
   <para name="indexName">nutch</para>
   <para name="crawlerType">doc</para>
   <para name="wordTopicType">wordtopic</para>
+  <para name="wordIndexType">wordindex</para>
   <para name="filePath">D:/crawlerData/</para>
   <para name="spark.app.name">CrawlerSparkApp</para>
   <para name="spark.master">local[4]</para>

@@ -21,13 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Properties;
-
 import javax.annotation.CheckForNull;
-
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.commons.io.IOUtils;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import pd.nutch.driver.ESDriver;
 import pd.nutch.driver.SparkDriver;
 
@@ -43,8 +40,8 @@ public abstract class CrawlerAbstract implements Serializable {
 	protected static final String ES_SETTINGS = "elastic_settings.json";
 	protected static final String ES_MAPPINGS = "elastic_mappings.json";
 
-	public transient FileWriter fw;
-	public transient BufferedWriter bw;
+	//public transient FileWriter fw;
+	//public transient BufferedWriter bw;
 	/**
 	 * Method of setting up essential configuration for MUDROD to start
 	 */
@@ -57,18 +54,21 @@ public abstract class CrawlerAbstract implements Serializable {
 	protected void initCrawler(String index) {
 		InputStream settingsStream = getClass().getClassLoader().getResourceAsStream(ES_SETTINGS);
 		InputStream mappingsStream = getClass().getClassLoader().getResourceAsStream(ES_MAPPINGS);
-		JSONObject settingsJSON = null;
-		JSONObject mappingJSON = null;
+		JsonObject settingsJSON = null;
+		JsonObject mappingJSON = null;
+		
+		JsonParser parser = new JsonParser();
+		JsonObject o = parser.parse("{\"a\": \"A\"}").getAsJsonObject();
 
 		try {
-			settingsJSON = new JSONObject(IOUtils.toString(settingsStream));
-		} catch (JSONException | IOException e1) {
+			settingsJSON = parser.parse(IOUtils.toString(settingsStream)).getAsJsonObject();
+		} catch (IOException e1) {
 			System.out.println("Error reading Elasticsearch settings!");
 		}
 
 		try {
-			mappingJSON = new JSONObject(IOUtils.toString(mappingsStream));
-		} catch (JSONException | IOException e1) {
+			mappingJSON = parser.parse(IOUtils.toString(mappingsStream)).getAsJsonObject();
+		} catch (IOException e1) {
 			System.out.println("Error reading Elasticsearch mappings!");
 		}
 
@@ -102,7 +102,8 @@ public abstract class CrawlerAbstract implements Serializable {
 		this.initCrawler();
 	}
 	
-	protected void createFile(String fileName) {
+	public FileWriter createFile(String fileName) {
+		FileWriter fw = null;
 		File file = new File(fileName);
 		if (file.exists()) {
 			file.delete();
@@ -115,8 +116,10 @@ public abstract class CrawlerAbstract implements Serializable {
 
 		try {
 			fw = new FileWriter(file.getAbsoluteFile());
-			bw = new BufferedWriter(fw);
+			//bw = new BufferedWriter(fw);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		 
+		return fw;
 	}}

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -88,7 +88,7 @@ public class CrawlerEngine {
 		options.addOption(helpOpt);
 		options.addOption(logIngestOpt);
 
-		CommandLineParser parser = new DefaultParser();
+		CommandLineParser parser = new GnuParser();
 		try {
 			CommandLine line = parser.parse(options, args);
 			String processingType = null;

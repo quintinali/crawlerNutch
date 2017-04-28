@@ -30,15 +30,20 @@ import pd.nutch.driver.SparkDriver;
 import pd.nutch.main.CrawlerAbstract;
 import pd.nutch.main.CrawlerConstants;
 import pd.nutch.main.CrawlerEngine;
+import pd.nutch.ranking.pagerank.RankGraphFrame;
 import scala.Tuple2;
 
-public class HostRank extends PageRank {
+public class HostRank extends CrawlerAbstract {
 
+	String indexName;
+	String typeName;
 	private Map<String, String> hostMap = new HashMap<String, String>();
 
 	public HostRank(Properties props, ESDriver es, SparkDriver spark) {
 		super(props, es, spark);
 		// TODO Auto-generated constructor stub
+		indexName = props.getProperty(CrawlerConstants.ES_INDEX_NAME);
+		typeName = props.getProperty(CrawlerConstants.CRAWLER_TYPE_NAME);
 	}
 
 	public void generateHostMap() {
@@ -65,9 +70,14 @@ public class HostRank extends PageRank {
 		}
 	}
 
-	public void domainUrlLinks(String fileName) throws IOException {
-		this.createFile(fileName);
+	public void exportDomainUrlLinks(String hostFile, String relationFile) throws IOException {
 		this.generateHostMap();
+
+		FileWriter hostfw = this.createFile(hostFile);
+		BufferedWriter hostbw = new BufferedWriter(hostfw);
+
+		FileWriter relationfw = this.createFile(relationFile);
+		BufferedWriter relationbw = new BufferedWriter(relationfw);
 
 		SearchRequestBuilder scrollBuilder = es.getClient().prepareSearch(indexName).setTypes(typeName)
 				.setScroll(new TimeValue(60000)).setQuery(QueryBuilders.matchAllQuery()).setSize(100);
@@ -79,6 +89,7 @@ public class HostRank extends PageRank {
 				Map<String, Object> result = hit.getSource();
 				String url = (String) result.get("url");
 				String host = this.getDomainName(url);
+				hostbw.write(host + "\n");
 				String inlinks = (String) result.get("url_inlinks");
 				String outlinks = (String) result.get("url_outlinks");
 				if (inlinks != null && !inlinks.isEmpty()) {
@@ -86,8 +97,10 @@ public class HostRank extends PageRank {
 					for (String inlink : inlinkArray) {
 						if (!inlink.trim().isEmpty()) {
 							String inhost = this.getDomainName(inlink);
-							if (!inhost.isEmpty() && !host.isEmpty())
-								bw.write(host + " " + inhost + "\n");
+							if (!inhost.isEmpty() && !host.isEmpty()) {
+								relationbw.write(inhost + " " + host + "\n");
+								hostbw.write(inhost + "\n");
+							}
 						}
 					}
 				}
@@ -97,8 +110,10 @@ public class HostRank extends PageRank {
 					for (String outlink : outlinkArray) {
 						if (!outlink.trim().isEmpty()) {
 							String outhost = this.getDomainName(outlink);
-							if (!outhost.isEmpty() && !host.isEmpty())
-								bw.write(outhost + " " + host + "\n");
+							if (!outhost.isEmpty() && !host.isEmpty()) {
+								relationbw.write(host + " " + outhost + "\n");
+								hostbw.write(outhost + "\n");
+							}
 						}
 					}
 				}
@@ -111,8 +126,10 @@ public class HostRank extends PageRank {
 			}
 		}
 
-		bw.close();
-		fw.close();
+		relationbw.close();
+		relationfw.close();
+		hostbw.close();
+		hostfw.close();
 	}
 
 	public String getDomainName(String url) {
@@ -142,10 +159,11 @@ public class HostRank extends PageRank {
 		return host;
 	}
 
-	public void rankAndupdate(String inFileName, int iteration, String outFileName) throws Exception {
+	public void rankAndupdate(String hostFile, String relationFile, String outFileName) throws Exception {
 
-		JavaPairRDD<String, Double> ranks = this.rank(inFileName, iteration, outFileName);
-		List<Tuple2<String, Double>> hostRanks = ranks.collect();
+		RankGraphFrame frame = new RankGraphFrame(props, es, spark);
+		JavaPairRDD<String, Double> hostRankRDD = frame.rank(hostFile, relationFile, outFileName);
+		List<Tuple2<String, Double>> hostRanks = hostRankRDD.collect();
 		int hostnum = hostRanks.size();
 
 		Map<String, Double> hostrankMap = new HashMap<String, Double>();
@@ -160,7 +178,6 @@ public class HostRank extends PageRank {
 		while (true) {
 			for (SearchHit hit : scrollResp.getHits().getHits()) {
 				Map<String, Object> result = hit.getSource();
-				String url = (String) result.get("url");
 				String host = (String) result.get("host");
 				String id = hit.getId();
 
@@ -180,7 +197,20 @@ public class HostRank extends PageRank {
 		}
 
 		es.destroyBulkProcessor();
+	}
 
+	public void run() {
+		String path = props.getProperty(CrawlerConstants.FILE_PATH);
+		try {
+			String hostFile = path + "hosts.txt";
+			String hostRelationFile = path + "hostRelations.txt";
+			String hostrankFile = path + "hostRanks.txt";
+			exportDomainUrlLinks(hostFile, hostRelationFile);
+			rankAndupdate(hostFile, hostRelationFile, hostrankFile);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public static void main(String[] args) {
@@ -192,15 +222,6 @@ public class HostRank extends PageRank {
 
 		String path = me.loadConfig().getProperty(CrawlerConstants.FILE_PATH);
 		HostRank hostrank = new HostRank(me.loadConfig(), es, spark);
-		try {
-			hostrank.domainUrlLinks(path + "hosts.txt");
-			hostrank.rankAndupdate(path + "hosts.txt", 100, path + "hostranks.txt");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		hostrank.run();
 	}
 }

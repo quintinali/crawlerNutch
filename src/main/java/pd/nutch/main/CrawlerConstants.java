@@ -20,4 +20,5 @@ public class CrawlerConstants {
 	  public static final String FILE_PATH = "filePath";
 	  
 	  public static final String WORD_TOPIC_TYPE = "wordTopicType";
+	  public static final String WORD_INDEX_TYPE = "wordIndexType";
 }

@@ -117,6 +117,24 @@ public class Ranker extends CrawlerAbstract implements Serializable {
 		DecimalFormat NDForm = new DecimalFormat("#.###");
 		return Double.valueOf(NDForm.format(d));
 	}
+	
+	private List<Double> getAttrValues(String attribute, List<SResult> resultList) {
+
+		List<Double> values = new ArrayList<Double>();
+		for (SResult a : resultList) {
+			double value = (double) SResult.get(a, attribute);
+			values.add(value);
+		}	
+		return values;
+	}
+	
+	private double normalize(double val, double min, double max) {
+		if(min != max){
+			return getNDForm((val - min) / (max - min));
+		}else{
+			return 0.0;
+		}
+	}
 
 	/**
 	 * Method of ranking a list of result
@@ -130,9 +148,15 @@ public class Ranker extends CrawlerAbstract implements Serializable {
 			for (int m = 0; m < SResult.rlist.length; m++) {
 				String att = SResult.rlist[m].split("_")[0];
 				double val = SResult.get(resultList.get(i), att);
-				double mean = getMean(att, resultList);
+				/*double mean = getMean(att, resultList);
 				double std = getStdDev(att, resultList);
-				double score = getZscore(val, mean, std);
+				double score = getZscore(val, mean, std);*/
+				
+				List<Double> attValues = getAttrValues(att, resultList);
+		        double min = Collections.min(attValues);
+		        double max = Collections.max(attValues);
+				double score = normalize(val, min, max);
+				
 				String score_id = SResult.rlist[m];
 				SResult.set(resultList.get(i), score_id, score);
 			}
