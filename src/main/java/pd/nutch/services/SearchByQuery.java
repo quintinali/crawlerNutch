@@ -2,6 +2,7 @@ package pd.nutch.services;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.Properties;
 
 import javax.servlet.ServletException;
@@ -51,15 +52,20 @@ public class SearchByQuery extends HttpServlet {
 		 
 		Properties config = engine.getConfig();
 		String fileList = null;
-		fileList = sr.ssearch(config.getProperty(CrawlerConstants.ES_INDEX_NAME),
-				config.getProperty(CrawlerConstants.CRAWLER_TYPE_NAME), query, "and", // please
-																						// replace
-																						// it
-																						// with
-																						// and,
-																						// or,
-																						// phrase
-				rr);
+		try {
+			fileList = sr.ssearch(config.getProperty(CrawlerConstants.ES_INDEX_NAME),
+					config.getProperty(CrawlerConstants.CRAWLER_TYPE_NAME), query, "phrase", // please
+																							// replace
+																							// it
+																							// with
+																							// and,
+																							// or,
+																							// phrase
+					rr);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		PrintWriter out = response.getWriter();
 		out.print(fileList);
