@@ -40,6 +40,7 @@ public class SparkDriver implements Serializable {
         .set("spark.master", props.getProperty(CrawlerConstants.SPARK_MASTER))
         .set("spark.hadoop.validateOutputSpecs", "false")
         .set("spark.files.overwrite", "true")
+        .set("spark.sql.warehouse.dir", "file:///E:/") 
         .set("spark.kryoserializer.buffer.max", "216m");
 
     String esHost = props.getProperty(CrawlerConstants.ES_UNICAST_HOSTS);
