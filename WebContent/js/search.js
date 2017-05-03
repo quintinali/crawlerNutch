@@ -157,7 +157,9 @@ function tableRowFormatter(searchResult) {
 	//row += '<div class="card-view"><span class="value"><i>keywords</i>: ' +  searchResult.keywords + '</span></div>';
 	//row += '<div class="card-view"><span class="value"><i>chunker keywords</i>: ' +  searchResult.chunkerKeyword+ '</span></div>';
 	//row += '<div class="card-view"><span class="value"><i>gold keywords</i>: ' +  searchResult.goldKeywords+ '</span></div>';
-	row += '<div class="card-view"><span class="value"><i>keywords</i>: ' +  searchResult.allKeywords + '</span></div>';
+	if(typeof(searchResult.allKeywords) != "undefined"){
+		row += '<div class="card-view"><span class="value"><i>keywords</i>: ' +  searchResult.allKeywords + '</span></div>';
+	}
 	//row += '<div class="card-view"><span class="value"><i>score</i>: ' +  searchResult.score + '</span></div>';
 	row += '<div class="card-view"><span class="value">' + DefaultFormatter(searchResult.Content) + '</span></div>';
 
