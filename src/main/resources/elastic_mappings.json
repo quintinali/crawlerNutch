@@ -3,12 +3,15 @@
     "properties": {
       "title": {
         "type": "string",
-        "analyzer": "csv",
-        "fielddata": true
+        "analyzer": "not_analyzed"
       },
       "content": {
         "type": "string",
         "analyzer": "csv"
+      },
+      "sentences": {
+        "type": "string",
+        "analyzer": "sentence"
       }
     }
   }

@@ -23,6 +23,9 @@
   <para name="crawlerType">doc</para>
   <para name="wordTopicType">wordtopic</para>
   <para name="wordIndexType">wordindex</para>
+  <para name="termIndex">pageterms</para>
+  <para name="termCandidateType">candidates</para>
+  <para name="candidateStaticType">candidatestatics</para>
   <para name="filePath">D:/crawlerData/</para>
   <para name="spark.app.name">CrawlerSparkApp</para>
   <para name="spark.master">local[4]</para>

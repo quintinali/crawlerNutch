@@ -30,6 +30,10 @@
       "csv": {
         "type": "pattern",
         "pattern": ","
+      },
+      "sentence": {
+        "type": "pattern",
+        "pattern": "&&&&"
       }
     }
   }
